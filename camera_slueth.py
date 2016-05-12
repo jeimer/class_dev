@@ -36,11 +36,11 @@ def copy_images(camera_num, start_date, end_date, local_dir):
     dates are entered with directory name format, e.g. May 1, 2016 would be 2016-05-01'''
     image_names = get_image_dirs(camera_num, start_date, end_date)
 
-    digit_len = math.floor( math.log(len(image_names),10))
+    digit_len = int(math.floor( math.log(len(image_names),10)))
     image_count = 0
     for image_name in image_names:
         image_file_count = str(image_count)
-        subprocess.call('cp {0} {1}/{2}.jpg'.format(image_name, local_dir,image_file_count.zfil(digit_len)), shell=True)
+        subprocess.call('cp {0} {1}/{2}.jpg'.format(image_name, local_dir,image_file_count.zfill(digit_len)), shell=True)
         image_count += 1
     return
 
