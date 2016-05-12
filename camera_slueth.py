@@ -46,7 +46,7 @@ def make_mp4(camera_num, start_date, end_date, outfile, reduction_factor, fps):
     ''' creates a gif from the images from start_date to end_date'''
     temp_dir = tempfile.mkdtemp(dir='/home/eimer/')
     copy_images(camera_num, start_date, end_date, temp_dir)
-    subprocess.call("ffmpeg -pattern_type glob -i '{0}/*.jpg' -r {1} -c:v libx264 {2}".format(temp_dir, fps, outfile),shell=True)
+    subprocess.call("ffmpeg -r {1} -pattern_type glob -i '{0}/*.jpg' -r {1} -c:v libx264 {2}".format(temp_dir, fps, outfile),shell=True)
     return
 
 def make_gif(camera_num, start_date, end_date, outfile, reduction_factor):
