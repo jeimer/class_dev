@@ -23,6 +23,7 @@ def get_image_dirs(camera_num, start_date, end_date):
     chunk_dirs = []
     for day_dir in day_dirs:
         chunk_dirs += sorted(glob.glob(day_dir))
+    print(chunk_dirs)
     for index in range(len(chunk_dirs)):
         chunk_dirs[index] = chunk_dirs[index] + '/site/images/camera{0}_*'.format(camera_num)
     image_names = []
