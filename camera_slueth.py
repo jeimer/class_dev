@@ -1,7 +1,7 @@
 #!/usr/local/bin/env python
 # functions to work with site images
 
-import glob, string, datetime, subprocess, images2gif, tempfile
+import glob, string, datetime, subprocess, images2gif, tempfile, math
 from PIL import Image
 
 def get_image_dirs(camera_num, start_date, end_date):
@@ -23,7 +23,6 @@ def get_image_dirs(camera_num, start_date, end_date):
     chunk_dirs = []
     for day_dir in day_dirs:
         chunk_dirs += sorted(glob.glob(day_dir))
-    print(chunk_dirs)
     for index in range(len(chunk_dirs)):
         chunk_dirs[index] = chunk_dirs[index] + '/site/images/camera{0}_*'.format(camera_num)
     image_names = []
@@ -37,9 +36,11 @@ def copy_images(camera_num, start_date, end_date, local_dir):
     dates are entered with directory name format, e.g. May 1, 2016 would be 2016-05-01'''
     image_names = get_image_dirs(camera_num, start_date, end_date)
 
+    digit_len = math.floor( math.log(len(image_names),10))
     image_count = 0
     for image_name in image_names:
-        subprocess.call('cp {0} {1}/{2}.jpg'.format(image_name, local_dir,image_count), shell=True)
+        image_file_count = str(image_count)
+        subprocess.call('cp {0} {1}/{2}.jpg'.format(image_name, local_dir,image_file_count.zfil(digit_len)), shell=True)
         image_count += 1
     return
 
