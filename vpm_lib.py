@@ -186,13 +186,14 @@ class VPM(object):
             gam = -1.0 * np.exp(4 * np.pi * self._dist * np.cos(theta)/wavelengths)
         return gam
 
-    def det_vpm(self, alpha, phi, theta, dists, wavelengths,Is,Qs,Us,Vs, ideal = True):
+    def det_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs, ideal = True):
         ''' follows the spirit and coordinate conventions of Chuss et al 2012.
         alpha (float):[radians] angle of the detectors w.r.t projected grid wires
         phi (float): [radians] angle of grid wires w.r.t. plane of incidence [radians]
         theta (float): [radians] angle of incidence [radians]
         dist (array like): grid mirror separation [m]
-        wavelength (array like): [m]
+        wavelengths (array like): [m]
+        weights (array like): weight of respective frequency relative to unity
         '''
         self._ideal = ideal
 
@@ -212,7 +213,7 @@ class VPM(object):
                 mu1 = Us * (-1./2 * np.sin(2*(alpha - 2*phi)) * np.cos(delays[delay_count] * wave_nums/2.)**2 +
                             1./2 * np.sin(2 * alpha) * np.sin(delays[delay_count] * wave_nums/2.)**2)
                 mv1 = Vs * ang_dif_factor * np.sin(delays[delay_count] * wave_nums)
-                det_val = mi + mq1 + mq2 + mu1 + mv1
+                det_val = (mi + mq1 + mq2 + mu1 + mv1) * weights
                 det[delay_count] = np.sum(det_val)/len(wave_nums)
         else:
             det= -1* np.ones(len(dists))
