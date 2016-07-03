@@ -35,16 +35,16 @@ def az_el_to_vpm_angs(az,el):
     coordinates assume El-over-Az coordiante orientation.
     '''
     c_el = np.cos(el)
-    s_el = np.sin(el)
     t_el = np.tan(el)
     c_az = np.cos(az)
     s_az = np.sin(az)
     c_9 = np.cos(np.pi/9.)
     s_9 = np.sin(np.pi/9.)
-    denom = c_az * np.sqrt(1 + t_el**2 / c_az**2)
+    denom = s_az * np.sqrt(1 + t_el**2 / s_az**2)
+    num = t_el * np.sqrt(1 - c_el**2 * c_az**2)
 
-    theta = np.arccos(c_el * c_9 * s_az - s_9 * np.sqrt(1 - c_el**2 * s_az**2) * t_el/denom)
-    phi = np.arccos(c_el * s_9 * s_az + c_9 * np.sqrt(1 - c_el**2 * s_az**2) * t_el/denom)
+    theta = np.arccos(c_el * c_9 * c_az - s_9 * num/denom)
+    phi = np.arccos(c_el * s_9 * c_az + c_9 * num/denom)
 
     return (theta,phi)
 
