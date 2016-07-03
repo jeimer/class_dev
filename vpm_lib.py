@@ -196,7 +196,7 @@ class VPM(object):
         weights (array like): weight of respective frequency relative to unity
         '''
         self._ideal = ideal
-        alpha = -1 * alpha # converts to CLASS array_data rotation convention
+        alpha = alpha # converts to CLASS array_data rotation convention
 
         delays = 2.0 * dists * np.cos(theta)
         wave_nums = 2.0 * np.pi/ wavelengths
