@@ -8,5 +8,5 @@ def data_valid_edges(tod):
     inner_edges = []
     for element in off_edge:
         inner_edges += [array_on_index[element]]
-        inner_edges += [array_on_index[element]]
+        inner_edges += [array_on_index[element+1]]
     return np.hstack((array_on_index[0],inner_edges, array_on_index[-1]))
