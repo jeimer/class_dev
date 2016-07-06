@@ -10,7 +10,5 @@ def data_valid_edges(tod):
         inner_edges += [array_on_index[element]]
         inner_edges += [array_on_index[element+1]]
     transitions = np.hstack((array_on_index[0],inner_edges, array_on_index[-1]))
-    range_pairs = []
-    for num in range(len(transitions)/2):
-        range_pairs += [transitions[num],transitions[num+1]]
+    range_pairs = zip(transitions[0::2], transitions[1::2])
     return range_pairs
