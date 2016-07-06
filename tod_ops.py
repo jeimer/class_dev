@@ -12,3 +12,8 @@ def data_valid_edges(tod):
     transitions = np.hstack((array_on_index[0],inner_edges, array_on_index[-1]))
     range_pairs = zip(transitions[0::2], transitions[1::2])
     return range_pairs
+
+def wire_grid_cal_angle(angs):
+    '''returns the actual angle of the wire-grid calibrator wires
+    angs: (array like) [degrees]'''
+    return angs * 0.9985 - 168.5
