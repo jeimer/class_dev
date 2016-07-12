@@ -77,7 +77,7 @@ def vpm_direction_ind(vpm_pos):
         else:
             dist_dec_ind += [index]
             increase_score += 1
-    return [dist_inc_ind, dist_dec_i]
+    return [dist_inc_ind, dist_dec_ind]
 
 def hyst_metric(y_1, e_1, y_2, e_2):
     val = (y_1 - y_2)**2 / np.sqrt(e_1**2+ e_2**2)
