@@ -124,5 +124,5 @@ def apply_filter(data, filt):
     return np.fft.ifft(fft_data * filt)
 
 def find_tau(tes_dat, vpm_dat):
-    res = optimize.minimize(eval_hysteresis, bounds = (0.0009, 0.01), args = (tes_data, vpm_dat), method = 'Bounded' )
+    res = optimize.minimize(eval_hysteresis, bounds = (0.0009, 0.01), args = (tes_dat, vpm_dat), method = 'Bounded' )
     return res.x
