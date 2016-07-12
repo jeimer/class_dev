@@ -107,8 +107,8 @@ def eval_hysteresis(tau, tes_dat, vpm_dat):
     inc_y, _ = np.histogram(vpm_dat[vpm_inc], bins, weights = increase_tes)
     inc_y2, _ = np.histogram(vpm_dat[vpm_inc], bins, weights = increase_tes * increase_tes)
     dec_hist, dec_bins = np.histogram(vpm_dat, bins)
-    dec_y, _ = np.histogram(vpm_dat, bins, weights = decrease_tes)
-    dec_y2, _ = np.histogram(vpm_dat, bins, weights = decrease_tes * decrease_tes)
+    dec_y, _ = np.histogram(vpm_dat[vpm_dec], bins, weights = decrease_tes)
+    dec_y2, _ = np.histogram(vpm_dat[vpm_dec], bins, weights = decrease_tes * decrease_tes)
 
     mid = [(a+b)/2 for a,b in zip(bins[:-1], bins[1:])]
     mean_inc = inc_y / inc_hist
