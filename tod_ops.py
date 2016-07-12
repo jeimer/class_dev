@@ -109,6 +109,6 @@ def eval_hysteresis(tes_dat, vpm_dat):
     return hyst_metric(mean_inc, eom_inc, mean_dec, eom_dec)
 
 def apply_filter(data, filt):
-    fft_data = np.fft.rfft(data)
-    return np.fft.irfft(fft_data * filt)
+    fft_data = np.fft.fft(data)
+    return np.fft.ifft(fft_data * filt)
 
