@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import optimize
 
 def data_valid_edges(tod):
     '''function returns a list of index pairs indicaing the ranges where the TES data from tod.data[0] is nonzero.
@@ -82,14 +83,24 @@ def hyst_metric(y_1, e_1, y_2, e_2):
     val = (y_1 - y_2)**2 / np.sqrt(e_1**2+ e_2**2)
     return val.sum()
 
-def eval_hysteresis(tes_dat, vpm_dat):
+def eval_hysteresis(tau, tes_dat, vpm_dat):
 
     vpm_inc, vpm_dec = direction_ind(vpm_dat)
-    single_tes = tes_dat - tes_data.mean()
+    n = tes_dat.shape[-1]
+    freqs = np.arange(float(n))/n
+    freqs[int((n+1)/2):] -= 1.
+    sample_freq = 50e6/200./11.
+    decimation = 1./113.
+    f = freqs * sample_freq * decimation
+    spole = single_pole_lp_filt(f, tau)
+    spole_inv = 1./spole
+    defilt_data = tod_ops.apply_filter(tes_dat, spole_inv)
+
+    single_tes = defilt_data - defilt_data.mean()
     increase_tes = single_tes[vpm_inc]
     decrease_tes = single_tes[vpm_dec]
 
-    #fist select bins for entire data set
+    #first select bins for entire data set
     hist, bins = np.histogram(vpm_dat,'auto')
 
     inc_hist, inc_bins = np.histogram(vpm_dat, bins)
@@ -99,7 +110,7 @@ def eval_hysteresis(tes_dat, vpm_dat):
     dec_y, _ = np.histogram(vpm_dat, bins, weights = decrease_tes)
     dec_y2, _ = np.histogram(vpm_dat, bins, weights = decrease_tes * decrease_tes)
 
-    mid = [(a+b)/2 for a,b in zip(inc_bins[:-1], inc_bins[1:])]
+    mid = [(a+b)/2 for a,b in zip(bins[:-1], bins[1:])]
     mean_inc = inc_y / inc_hist
     eom_inc = np.sqrt((inc_y2/inc_hist - mean_inc * mean_inc)/(inc_hist-1))
 
@@ -112,3 +123,6 @@ def apply_filter(data, filt):
     fft_data = np.fft.fft(data)
     return np.fft.ifft(fft_data * filt)
 
+def find_tau(tes_dat, vpm_dat):
+    res = optimize.minimize(eval_hysteresis, bounds = (0.0009, 0.01), args = (tes_data, vpm_dat), method = 'Bounded' )
+    return res.x
