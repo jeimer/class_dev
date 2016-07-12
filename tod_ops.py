@@ -94,7 +94,7 @@ def eval_hysteresis(tau, tes_dat, vpm_dat):
     f = freqs * sample_freq * decimation
     spole = single_pole_lp_filt(f, tau)
     spole_inv = 1./spole
-    defilt_data = tod_ops.apply_filter(tes_dat, spole_inv)
+    defilt_data = apply_filter(tes_dat, spole_inv)
 
     single_tes = defilt_data - defilt_data.mean()
     increase_tes = single_tes[vpm_inc]
