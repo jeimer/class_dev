@@ -85,7 +85,7 @@ def hyst_metric(y_1, e_1, y_2, e_2):
 
 def eval_hysteresis(tau, tes_dat, vpm_dat):
 
-    vpm_inc, vpm_dec = direction_ind(vpm_dat)
+    vpm_inc, vpm_dec = vpm_direction_ind(vpm_dat)
     n = tes_dat.shape[-1]
     freqs = np.arange(float(n))/n
     freqs[int((n+1)/2):] -= 1.
