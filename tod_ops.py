@@ -121,7 +121,7 @@ def eval_hysteresis(tau, tes_dat, vpm_dat):
 
 def apply_filter(data, filt):
     fft_data = np.fft.fft(data)
-    return np.fft.ifft(fft_data * filt)
+    return np.fft.ifft(fft_data * filt).real
 
 def find_tau(tes_dat, vpm_dat):
     res = optimize.minimize_scalar(eval_hysteresis, bounds = (0.0009, 0.01), args = (tes_dat, vpm_dat), method = 'Bounded' )
