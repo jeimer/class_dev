@@ -103,10 +103,10 @@ def eval_hysteresis(tau, tes_dat, vpm_dat):
     #first select bins for entire data set
     hist, bins = np.histogram(vpm_dat,'auto')
 
-    inc_hist, inc_bins = np.histogram(vpm_dat, bins)
+    inc_hist, inc_bins = np.histogram(vpm_dat[vpm_inc], bins)
     inc_y, _ = np.histogram(vpm_dat[vpm_inc], bins, weights = increase_tes)
     inc_y2, _ = np.histogram(vpm_dat[vpm_inc], bins, weights = increase_tes * increase_tes)
-    dec_hist, dec_bins = np.histogram(vpm_dat, bins)
+    dec_hist, dec_bins = np.histogram(vpm_dat[vpm_dec], bins)
     dec_y, _ = np.histogram(vpm_dat[vpm_dec], bins, weights = decrease_tes)
     dec_y2, _ = np.histogram(vpm_dat[vpm_dec], bins, weights = decrease_tes * decrease_tes)
 
