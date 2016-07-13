@@ -145,10 +145,11 @@ def find_tau(tes_dat, vpm_dat):
     print('shape is' + str(np.shape(tes_dat)))
     if len(np.shape(tes_dat)) == 1:
         res = [optimize.minimize_scalar(eval_hysteresis, bounds = bound, args = (tes_dat, vpm_dat), method = 'Bounded' ).x]
-    res = []
-    num_dets = np.shape(tes_dat)[0]
-    for det_num in range(num_dets):
-        res += [optimize.minimize_scalar(eval_hysteresis, bounds = bound, args = (tes_dat[det_num,:], vpm_dat), method = 'Bounded' ).x]
+    else:
+        res = []
+        num_dets = np.shape(tes_dat)[0]
+        for det_num in range(num_dets):
+            res += [optimize.minimize_scalar(eval_hysteresis, bounds = bound, args = (tes_dat[det_num,:], vpm_dat), method = 'Bounded' ).x]
     return np.array(res)
 
 def remove_tau(det_dat, tau):
