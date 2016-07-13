@@ -52,7 +52,7 @@ def single_pole_lp_filt(freqs, tau):
     tau: (float) or (array like) time constant(s) of filter [seconds]
     '''
     pole = 2.j * np.pi * freqs
-    if type(tau) == np.float64:
+    if type(tau) == np.float64 or type(tau) == float:
         return 1./(1 + tau * pole)
     else:
         tau = tau[:,np.newaxis]
