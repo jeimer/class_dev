@@ -164,7 +164,7 @@ def remove_tau(det_dat, tau):
         num_dets = np.shape(det_dat)[0]
         samps = np.shape(det_dat)[1]
     freqs = np.arange(float(samps))/samps
-    freqs[int((n + 1)/2):] -= 1.
+    freqs[int((samps + 1)/2):] -= 1.
     samp_freq = 25e6/100./11./113.
     threshold = 1e-15
     freqs *= samp_freq
