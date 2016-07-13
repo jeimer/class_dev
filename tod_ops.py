@@ -142,6 +142,7 @@ def find_tau(tes_dat, vpm_dat):
     tes_dat: (array like) tod.data type array.
     vpm_dat: (array like) grid mirror separation (mm)'''
     bound = (0.0009, 0.01)
+    print('shape is' + str(np.shape(tes_data)))
     if np.shape(tes_dat)[0] == 1:
         res = [optimize.minimize_scalar(eval_hysteresis, bounds = bound, args = (tes_dat, vpm_dat), method = 'Bounded' ).x]
     res = []
