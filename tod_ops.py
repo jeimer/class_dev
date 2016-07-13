@@ -157,8 +157,12 @@ def remove_tau(det_dat, tau):
     det_dat: (array like) first index is detector, second index is time index.
     tau: (array like) time constant of respective detector (seconds)'''
 
-    num_dets = np.shape(det_dat)[0]
-    samps = np.shape(det_dat)[1]
+    if len(np.shape(det_dat)) == 1:
+        num_dets = 1
+        samps = np.shape(det_dat)[0]
+    else:
+        num_dets = np.shape(det_dat)[0]
+        samps = np.shape(det_dat)[1]
     freqs = np.arange(float(samps))/n
     freqs[int((n + 1)/2):] -= 1.
     samp_freq = 25e6/100./11./113.
