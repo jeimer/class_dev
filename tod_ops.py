@@ -99,7 +99,7 @@ def eval_hysteresis(tau, tes_dat, vpm_dat):
 
     vpm_inc, vpm_dec = vpm_direction_ind(vpm_dat)
 
-    defilt = remove_tau(tes_dat, tau)
+    defilt_data = remove_tau(tes_dat, tau)
     #n = tes_dat.shape[-1]
     #freqs = np.arange(float(n))/n
     #freqs[int((n+1)/2):] -= 1.
