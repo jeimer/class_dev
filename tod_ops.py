@@ -91,6 +91,11 @@ def hyst_metric(y_1, e_1, y_2, e_2):
     return val.sum()
 
 def eval_hysteresis(tau, tes_dat, vpm_dat):
+    '''returns the value of hyst_metric for given choice of tau, after being removed from tes_dat. assumeing vpm_dat
+    grid mirror separations.
+    tau: (float) time constant (seconds)
+    tes_dat: (array like) single dimential array of tes time ordered data.
+    vpm_dat: (array like) single dimentional array of grid-mirror separation (mm)'''
     
     vpm_inc, vpm_dec = vpm_direction_ind(vpm_dat)
     n = tes_dat.shape[-1]
@@ -131,8 +136,14 @@ def apply_filter(data, filt):
     return np.fft.ifft(fft_data * filt).real
 
 def find_tau(tes_dat, vpm_dat):
-    res = optimize.minimize_scalar(eval_hysteresis, bounds = (0.0009, 0.01), args = (tes_dat, vpm_dat), method = 'Bounded' )
-    return res.x
+    '''returns an array of time constant tau values for each detector in tes_dat.
+    tes_dat: (array like) tod.data type array.
+    vpm_dat: (array like) grid mirror separation (mm)'''
+    res = []
+    num_dets = np.shape(tes_dat)[0]
+    for det_num in range(num_dets):
+        res += [optimize.minimize_scalar(eval_hysteresis, bounds = (0.0009, 0.01), args = (tes_dat[det_num,:], vpm_dat), method = 'Bounded' ).x]
+    return np.array(res)
 
 def remove_tau(det_dat, tau):
     '''given a detector time stream, or array of time streams, a single pole filter with time constant tau, or array of taus,
