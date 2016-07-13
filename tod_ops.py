@@ -168,7 +168,7 @@ def remove_tau(det_dat, tau):
     samp_freq = 25e6/100./11./113.
     threshold = 1e-15
     freqs *= samp_freq
-    spole = single_pole_pl_filt(freqs, tau)
+    spole = single_pole_lp_filt(freqs, tau)
     #check that spole doesn't have numerically small numbers
     if len(np.where(spole < threshold)[0]) > 0:
         print('filter produces numerically unstable small numbers')
