@@ -96,17 +96,19 @@ def eval_hysteresis(tau, tes_dat, vpm_dat):
     tau: (float) time constant (seconds)
     tes_dat: (array like) single dimential array of tes time ordered data.
     vpm_dat: (array like) single dimentional array of grid-mirror separation (mm)'''
-    
+
     vpm_inc, vpm_dec = vpm_direction_ind(vpm_dat)
-    n = tes_dat.shape[-1]
-    freqs = np.arange(float(n))/n
-    freqs[int((n+1)/2):] -= 1.
-    sample_freq = 50e6/200./11.
-    decimation = 1./113.
-    f = freqs * sample_freq * decimation
-    spole = single_pole_lp_filt(f, tau)
-    spole_inv = 1./spole
-    defilt_data = apply_filter(tes_dat, spole_inv)
+
+    defilt = remove_tau(tes_dat, tau)
+    #n = tes_dat.shape[-1]
+    #freqs = np.arange(float(n))/n
+    #freqs[int((n+1)/2):] -= 1.
+    #sample_freq = 50e6/200./11.
+    #decimation = 1./113.
+    #f = freqs * sample_freq * decimation
+    #spole = single_pole_lp_filt(f, tau)
+    #spole_inv = 1./spole
+    #defilt_data = apply_filter(tes_dat, spole_inv)
 
     single_tes = defilt_data - defilt_data.mean()
     increase_tes = single_tes[vpm_inc]
@@ -162,6 +164,6 @@ def remove_tau(det_dat, tau):
     #check that spole doesn't have numerically small numbers
     if len(np.where(spole < threshold)[0]) > 0:
         print('filter produces numerically unstable small numbers')
-        break
+        return 'badness'
     else:
         return apply_filter(det_dat, 1./spole)
