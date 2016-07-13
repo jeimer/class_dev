@@ -48,12 +48,15 @@ def vpm_direction_ind(vpm_pos):
 def single_pole_lp_filt(freqs, tau):
     '''
     returns the transfer function for a single pole low-pass filter with time constant tau at each frequency in freqs
-    freqs: (list like) list of frequencies [Hz]
-    tau: (float) time constant of filter [seconds]
+    freqs: (array like) list of frequencies [Hz]
+    tau: (float) or (array like) time constant(s) of filter [seconds]
     '''
     pole = 2.j * np.pi * freqs
-    return 1./(1 + tau * pole)
-
+    if type(tau) == float:
+        return 1./(1 + tau * pole)
+    else:
+        tau = tau[:,np.newaxis]
+        return 1./(1 + tau * pole)
 
 def vpm_direction_ind(vpm_pos):
     '''returns a list of two lists. The first is a list of indicies of vpm_pos_vecter
@@ -80,11 +83,15 @@ def vpm_direction_ind(vpm_pos):
     return [dist_inc_ind, dist_dec_ind]
 
 def hyst_metric(y_1, e_1, y_2, e_2):
-    val = (y_1 - y_2)**2 / np.sqrt(e_1**2+ e_2**2)
+    '''evaluates the level of hysteresis defined by the sum of the square of the separation in y-values (y_1, y_2),
+    deweighted by respective errors (e_1, e_2)
+    y_1, y_2: (array like) the y-values of the two branches of the hysteresis loop in question
+    e_1, e_2: (array like) the errors on the y-values'''
+    val = (y_1 - y_2)**2 / np.sqrt(e_1**2 + e_2**2)
     return val.sum()
 
 def eval_hysteresis(tau, tes_dat, vpm_dat):
-
+    
     vpm_inc, vpm_dec = vpm_direction_ind(vpm_dat)
     n = tes_dat.shape[-1]
     freqs = np.arange(float(n))/n
@@ -126,3 +133,24 @@ def apply_filter(data, filt):
 def find_tau(tes_dat, vpm_dat):
     res = optimize.minimize_scalar(eval_hysteresis, bounds = (0.0009, 0.01), args = (tes_dat, vpm_dat), method = 'Bounded' )
     return res.x
+
+def remove_tau(det_dat, tau):
+    '''given a detector time stream, or array of time streams, a single pole filter with time constant tau, or array of taus,
+    is deconvolved from the time stream. The recoved time stream(s) is(are) returned.
+    det_dat: (array like) first index is detector, second index is time index.
+    tau: (array like) time constant of respective detector (seconds)'''
+
+    num_dets = np.shape(det_dat)[0]
+    samps = np.shape(det_dat)[1]
+    freqs = np.arange(float(samps))/n
+    freqs[int((n + 1)/2):] -= 1.
+    samp_freq = 25e6/100./11./113.
+    threshold = 1e-15
+    freqs *= samp_freq
+    spole = single_pole_pl_filt(freqs, tau)
+    #check that spole doesn't have numerically small numbers
+    if len(np.where(spole < threshold)[0]) > 0:
+        print('filter produces numerically unstable small numbers')
+        break
+    else:
+        return apply_filter(det_dat, 1./spole)
