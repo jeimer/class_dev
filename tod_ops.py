@@ -176,3 +176,26 @@ def remove_tau(det_dat, tau):
         return 'badness'
     else:
         return apply_filter(det_dat, 1./spole)
+
+def vpm_hyst(tes_data, vpm_data, in_bins):
+    vpm_inc, vpm_dec = vpm_direction_ind(vpm_data)
+    increase_tes = tes_data[vpm_inc]
+    decrease_tes = tes_data[vpm_dec]
+
+    hist, bins = np.histogram(vpm_data, in_bins)
+
+    inc_hist, inc_bins = np.histogram(vpm_data[vpm_inc], bins)
+    inc_y, _ = np.histogram(vpm_data[vpm_inc], bins, weights = increase_tes)
+    inc_y2, _ = np.histogram(vpm_data[vpm_inc], bins, weights = increase_tes * increase_tes)
+    dec_hist, dec_bins = np.histogram(vpm_data[vpm_dec], bins)
+    dec_y, _ = np.histogram(vpm_data[vpm_dec], bins, weights = decrease_tes)
+    dec_y2, _ = np.histogram(vpm_data[vpm_dec], bins, weights = decrease_tes * decrease_tes)
+
+    mid = [(a+b)/2 for a,b in zip(inc_bins[:-1], inc_bins[1:])]
+    mean_inc = inc_y / inc_hist
+    eom_inc = np.sqrt((inc_y2/inc_hist - mean_inc * mean_inc)/(inc_hist-1))
+
+    mean_dec = dec_y / dec_hist
+    eom_dec = np.sqrt((dec_y2/dec_hist - mean_dec * mean_dec)/(dec_hist-1))
+    
+    return [mid, mean_inc, eom_inc, mean_dec, eom_dec]
