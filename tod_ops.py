@@ -141,10 +141,13 @@ def find_tau(tes_dat, vpm_dat):
     '''returns an array of time constant tau values for each detector in tes_dat.
     tes_dat: (array like) tod.data type array.
     vpm_dat: (array like) grid mirror separation (mm)'''
+    bound = (0.0009, 0.01)
+    if np.shape(tes_dat)[0] == 1:
+        res = [optimize.minimize_scalar(eval_hysteresis, bounds = bound, args = (tes_dat, vpm_dat), method = 'Bounded' ).x]
     res = []
     num_dets = np.shape(tes_dat)[0]
     for det_num in range(num_dets):
-        res += [optimize.minimize_scalar(eval_hysteresis, bounds = (0.0009, 0.01), args = (tes_dat[det_num,:], vpm_dat), method = 'Bounded' ).x]
+        res += [optimize.minimize_scalar(eval_hysteresis, bounds = bound, args = (tes_dat[det_num,:], vpm_dat), method = 'Bounded' ).x]
     return np.array(res)
 
 def remove_tau(det_dat, tau):
