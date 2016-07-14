@@ -77,7 +77,7 @@ class VPM(object):
         self._radius = sum(self._thick.itervalues())
 
     def set_dist(self, dist):
-        '''set the grid mirror separtation distance [meters]'''
+        '''set the grid mirror separtation distance [m]'''
         self._dist = dist
 
     def get_dist(self):
@@ -196,7 +196,6 @@ class VPM(object):
         weights (array like): weight of respective frequency relative to unity
         '''
         self._ideal = ideal
-        alpha = alpha # converts to CLASS array_data rotation convention
 
         delays = 2.0 * dists * np.cos(theta)
         wave_nums = 2.0 * np.pi/ wavelengths
