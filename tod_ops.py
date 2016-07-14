@@ -100,15 +100,6 @@ def eval_hysteresis(tau, tes_dat, vpm_dat):
     vpm_inc, vpm_dec = vpm_direction_ind(vpm_dat)
 
     defilt_data = remove_tau(tes_dat, tau)
-    #n = tes_dat.shape[-1]
-    #freqs = np.arange(float(n))/n
-    #freqs[int((n+1)/2):] -= 1.
-    #sample_freq = 50e6/200./11.
-    #decimation = 1./113.
-    #f = freqs * sample_freq * decimation
-    #spole = single_pole_lp_filt(f, tau)
-    #spole_inv = 1./spole
-    #defilt_data = apply_filter(tes_dat, spole_inv)
 
     single_tes = defilt_data - defilt_data.mean()
     increase_tes = single_tes[vpm_inc]
@@ -134,6 +125,11 @@ def eval_hysteresis(tau, tes_dat, vpm_dat):
     return hyst_metric(mean_inc, eom_inc, mean_dec, eom_dec)
 
 def apply_filter(data, filt):
+    ''' given configuration domain data and frequency domain filt transfer function, this function returns
+    an array of data to which the filter has been applied.
+    data: (array like) time domain-like data array
+    filt: (array like) transfer function of a filter evaluated at the same frequencies resulting from the fft of the data
+    '''
     fft_data = np.fft.fft(data)
     return np.fft.ifft(fft_data * filt).real
 
@@ -177,6 +173,20 @@ def remove_tau(det_dat, tau):
         return apply_filter(det_dat, 1./spole)
 
 def vpm_hyst(tes_data, vpm_data, in_bins):
+    ''' returns bin centers, mean values, and error-on-mean values for portion of data when grid-mirror distance is
+    increasing and for portion of data when grid-mirror distance is decreasing.
+    input:
+    tes_data: (array like) single detector time stream
+    vpm_data: (array like) respective vpm grid-mirror distances
+    in_bins: (list like or keyword) can be end points of bins to be used or np.histogram bin keyword
+    returned format:
+    [mid, mean_inc, eom_inc, mean_dec, eom_dec] = vpm_hyst(tes_data, vpm_data, in_bins)
+    mid = array of centers of bins
+    mean_inc = array of mean values for tes_data within respective bin when the grid-mirror distance is increasing
+    eom_inc = respective error on mean
+    mean_dec = similar to mean_inc but while grid-mirror distance is decreasing
+    eom_dec = respective error on mean
+    '''
     vpm_inc, vpm_dec = vpm_direction_ind(vpm_data)
     increase_tes = tes_data[vpm_inc]
     decrease_tes = tes_data[vpm_dec]
@@ -196,5 +206,5 @@ def vpm_hyst(tes_data, vpm_data, in_bins):
 
     mean_dec = dec_y / dec_hist
     eom_dec = np.sqrt((dec_y2/dec_hist - mean_dec * mean_dec)/(dec_hist-1))
-    
+
     return [mid, mean_inc, eom_inc, mean_dec, eom_dec]
