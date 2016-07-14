@@ -46,7 +46,7 @@ def vpm_direction_ind(vpm_pos):
     return [dist_inc_ind, dist_dec_ind]
 
 def single_pole_lp_filt(freqs, tau):
-1    '''
+    '''
     returns the transfer function for a single pole low-pass filter with time constant tau at each frequency in freqs
     freqs: (array like) list of frequencies [Hz]
     tau: (float) or (array like) time constant(s) of filter [seconds]
