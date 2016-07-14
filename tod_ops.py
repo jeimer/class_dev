@@ -17,7 +17,7 @@ def data_valid_edges(tod):
 def wire_grid_cal_angle(angs):
     '''returns the actual angle of the wire-grid calibrator wires
     angs: (array like) [degrees]'''
-    return ()angs * 0.9985 - 168.5)%360
+    return (angs * 0.9985 - 168.5)%360
 
 def vpm_direction_ind(vpm_pos):
     '''returns a list of two lists. The first list is the indicies of vpm_pos when the value of vpm_pos is increasing.
