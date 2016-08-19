@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import optimize
+from moby2.util.mce import MCEButterworth, MCERunfile
 
 def data_valid_edges(tod):
     '''function returns a list of index pairs indicaing the ranges where the TES data from tod.data[0] is nonzero.
@@ -208,3 +209,12 @@ def vpm_hyst(tes_data, vpm_data, in_bins):
     eom_dec = np.sqrt((dec_y2/dec_hist - mean_dec * mean_dec)/(dec_hist-1))
 
     return [mid, mean_inc, eom_inc, mean_dec, eom_dec]
+
+def debutter_chunk(tod_chunk, runfile):
+    '''returns chunk of data with an inverse butterworth filter applied to tod_chunk.
+    tod_chunk: (array like) tes data to be debutterworthed
+    runfile: (string) filename of runfile.
+    '''
+    mce_butter = MCEButterworth.from_runfile(runfile)
+    filtered_tod = mce_butter.apply_filter(tod_chunk, decimation = 1./113., inverse = True, gain0 = 1)
+    return filtered_tod
