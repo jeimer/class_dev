@@ -221,7 +221,7 @@ def get_tod_chunk(path):
     tod = get_tod(path)
     runfile_tod = tod.get_sync_data('mceq_runfile_id')
     runfile_id = np.unique(runfile_tod)
-    exists = runfile > 0
+    exists = runfile_id > 0
     runfile = runfile_id[exists][0]
     return get_tod(path, runfile_ctime = runfile)
 
