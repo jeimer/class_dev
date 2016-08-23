@@ -237,6 +237,7 @@ def calib_chunk(tod_chunk, ivout, array_data):
     rc = [list(el) for el in rc]
     resp = ivout.resp_fit
     resp_rc = [resp[p[0],p[1]] for p in rc]
+    resp_rc = np.array(resp_rc)
     resp_rc = resp_rc[:,np.newaxis]
     dI_dDAC = 1./2.**dac_bits/M_ratio/Rfb/filtgain
     cal_tod_chunk = tod_chunk * dI_dDAC * polarity * resp * 1e3 # nv -> pW
