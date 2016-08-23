@@ -218,3 +218,14 @@ def debutter_chunk(tod_chunk, runfile):
     mce_butter = MCEButterworth.from_runfile(runfile)
     filtered_tod = mce_butter.apply_filter(tod_chunk, decimation = 1./113., inverse = True, gain0 = 1)
     return filtered_tod
+
+def calib_chunk(tod_chunk, ivout, row, col):
+    polarity = -1
+    dac_bits = 14
+    M_ratio = 24.6
+    Rfb = 5100.
+    filtgain = 2048.
+    resp = ivout.resp_fit
+    dI_dDAC = 1./2**dac_bits/M_ratio/Rfb/filtgain
+    cal_tod_chunk = tod_chunk * dI_dDAC * polarity * resp[row, col] * 1e3 # nv -> pW
+    return cal_tod_chunk
