@@ -1,6 +1,8 @@
 import numpy as np
 from scipy import optimize
 from moby2.util.mce import MCEButterworth, MCERunfile
+from moby2.instruments.class_telescope.products import get_tod
+
 
 def data_valid_edges(tod):
     '''function returns a list of index pairs indicaing the ranges where the TES data from tod.data[0] is nonzero.
@@ -210,6 +212,19 @@ def vpm_hyst(tes_data, vpm_data, in_bins):
 
     return [mid, mean_inc, eom_inc, mean_dec, eom_dec]
 
+def get_tod_chunk(path):
+    '''
+    loads a tod even when a runfile is not pressent for the full tod.
+    A tod is returned with the runfile forced to be the first valid runfile in the passed path.
+    path: (string like) full path to targeted tod.
+    '''
+    tod = get_tod(path)
+    runfile_tod = tod.get_sync.data('mceq_runfile_id')
+    runfile_id = np.unique(runfiles_tods)
+    exists = runfile > 0
+    runfile = runfile_id[exists][0]
+    return get_tod(path, runfile_ctime = runfile)
+
 def debutter_chunk(tod_chunk, runfile):
     '''returns chunk of data with an inverse butterworth filter applied to tod_chunk.
     tod_chunk: (array like) tes data to be debutterworthed. First dimesion is detector, second is time.
@@ -226,7 +241,8 @@ def calib_chunk(tod_chunk, ivout, array_data):
     '''
     returns a calibrated chunk of data using the responsivity calculated from the passed ivout.
     tod_chunk: (array like) tes data to be calibrated. First dimension is detector, second is time.
-    ivout: 
+    ivout: (class_sql.IvOut object) ivout object created by moby2.instruments.class_telescope.class_sql.find_iv_out_for_tod function.
+    array_data: (library) array_data with keys 'row' and 'col' containing the respective row and col of row of tod_chunk.
     '''
     polarity = -1
     dac_bits = 14
