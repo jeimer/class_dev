@@ -212,20 +212,32 @@ def vpm_hyst(tes_data, vpm_data, in_bins):
 
 def debutter_chunk(tod_chunk, runfile):
     '''returns chunk of data with an inverse butterworth filter applied to tod_chunk.
-    tod_chunk: (array like) tes data to be debutterworthed
+    tod_chunk: (array like) tes data to be debutterworthed. First dimesion is detector, second is time.
     runfile: (string) filename of runfile.
+
+    This function applies the MCEButterworth inverse butterworth filter from the moby2.util.mce library
+    using the passed runfile to remove the MCE butterworth filter from the tod_chunk.
     '''
     mce_butter = MCEButterworth.from_runfile(runfile)
     filtered_tod = mce_butter.apply_filter(tod_chunk, decimation = 1./113., inverse = True, gain0 = 1)
     return filtered_tod
 
-def calib_chunk(tod_chunk, ivout, row, col):
+def calib_chunk(tod_chunk, ivout, array_data):
+    '''
+    returns a calibrated chunk of data using the responsivity calculated from the passed ivout.
+    tod_chunk: (array like) tes data to be calibrated. First dimension is detector, second is time.
+    ivout: 
+    '''
     polarity = -1
     dac_bits = 14
     M_ratio = 24.6
     Rfb = 5100.
     filtgain = 2048.
+    rc = zip(array_data['row'], array_data['col'])
+    rc = [list(el) for el in rc]
     resp = ivout.resp_fit
-    dI_dDAC = 1./2**dac_bits/M_ratio/Rfb/filtgain
-    cal_tod_chunk = tod_chunk * dI_dDAC * polarity * resp[row, col] * 1e3 # nv -> pW
+    resp_rc = [resp[p[0],p[1]] for p in rc]
+    resp_rc = resp_rc[:,np.newaxis]
+    dI_dDAC = 1./2.**dac_bits/M_ratio/Rfb/filtgain
+    cal_tod_chunk = tod_chunk * dI_dDAC * polarity * resp * 1e3 # nv -> pW
     return cal_tod_chunk
