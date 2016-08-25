@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import optimize
+from scipy.signal import butter, lfilter
 from moby2.util.mce import MCEButterworth, MCERunfile
 from moby2.instruments.class_telescope.products import get_tod
 
@@ -258,3 +259,20 @@ def calib_chunk(tod_chunk, ivout, array_data):
     dI_dDAC = 1./2.**dac_bits/M_ratio/Rfb/filtgain
     cal_tod_chunk = tod_chunk * dI_dDAC * polarity * resp_rc * 1e3 # nv -> pW
     return cal_tod_chunk
+
+def butter_highpass_filter(data, fc, f_samp, order = 5):
+    '''
+    applies a highpass butterworth filter with fc cutoff of specified order to data
+    Parameters:
+    data: (array like) tes data to be filtered
+    fc: (float) frequency at which the gain drops to 1/sqrt(2). Units must match f_samp units.
+    f_samp: (float) sampling frequency. Units must match fc units.
+    order: (int) order of Butterworth filter to apply. Default is 5
+
+    Returns:
+    filtered_data: (array like) filtered tes data
+    '''
+    nyq = 0.5 * f_samp
+    low = fc/nyq
+    b, a = butter(order, low, btype = 'highpass')
+    return lfilter(b, a, data)
