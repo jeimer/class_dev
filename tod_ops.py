@@ -291,6 +291,7 @@ def good_det_ids(array_data, bad_row = [], bad_col = []):
             bad_dets += [det]
         if array_data['col'][det] in bad_col:
             bad_dets += [det]
+    bad_dets = np.array(bad_dets)
     bad_dets = np.unique[bad_dets]
     for det in bad_dets:
         good_dets.remove(det)
