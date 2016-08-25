@@ -276,3 +276,22 @@ def butter_highpass_filter(data, fc, f_samp, order = 5):
     low = fc/nyq
     b, a = butter(order, low, btype = 'highpass')
     return lfilter(b, a, data)
+
+def good_det_ids(array_data, bad_row = [], bad_col = []):
+    num_dets = len(array_data['det_type'])
+    good_dets = []
+    for det in range(num_dets):
+        if array_data['det_type'][det] == 'H':
+            good_dets += [det]
+        elif array_data['det_type'][det] == 'V':
+            good_dets += [det]
+    bad_dets = []
+    for det in good_dets:
+        if array_data['row'][det] in bad_row:
+            bad_dets += [det]
+        if array_data['col'][det] in bad_col:
+            bad_dets += [det]
+    bad_dets = np.unique[bad_dets]
+    for det in bad_dets:
+        good_dets.remove(det)
+    return good_dets
