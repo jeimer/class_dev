@@ -213,7 +213,7 @@ def vpm_hyst(tes_data, vpm_data, in_bins):
 
     return [mid, mean_inc, eom_inc, mean_dec, eom_dec]
 
-def get_tod_chunk(path):
+def get_tod_chunk(path, chunk = 0):
     '''
     loads a tod even when a runfile is not pressent for the full tod.
     A tod is returned with the runfile forced to be the first valid runfile in the passed path.
@@ -223,7 +223,7 @@ def get_tod_chunk(path):
     runfile_tod = tod.get_sync_data('mceq_runfile_id')
     runfile_id = np.unique(runfile_tod)
     exists = runfile_id > 0
-    runfile = runfile_id[exists][0]
+    runfile = runfile_id[exists][chunk]
     return get_tod(path, runfile_ctime = runfile)
 
 def debutter_chunk(tod_chunk, runfile):
