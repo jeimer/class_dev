@@ -151,6 +151,20 @@ def find_tau(tes_dat, vpm_dat):
             res += [optimize.minimize_scalar(eval_hysteresis, bounds = bound, args = (tes_dat[det_num,:], vpm_dat), method = 'Bounded' ).x]
     return np.array(res)
 
+def find_tau2(tes_dat, vpm_dat):
+    bound = (0.0009, 0.01)
+    if len(np.shape(tes_dat)) == 1:
+        res1 = optimize.minimize(eval_hysteresis, 0.004, args = (tes_dat, vpm_dat), bounds = bound)
+        res = [res1.x]
+    else:
+        res = []
+        num_dets = np.shape(tes_dat)[0]
+        for det_num in range(num_dets):
+               res1 = optimize.minimize(eval_hysteresis, 0.004, args = (tes_dat, vpm_dat) bounds = bound)
+               res += [res1.x]
+
+    return np.array(res)
+
 def remove_tau(det_dat, tau):
     '''given a detector time stream, or array of time streams, a single pole filter with time constant tau, or array of taus,
     is deconvolved from the time stream. The recoved time stream(s) is(are) returned.
