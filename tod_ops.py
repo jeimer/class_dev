@@ -152,7 +152,7 @@ def find_tau(tes_dat, vpm_dat):
     return np.array(res)
 
 def find_tau2(tes_dat, vpm_dat):
-    bound = (0.0009, 0.01)
+    bound = ((0.0009, 0.01))
     if len(np.shape(tes_dat)) == 1:
         res1 = optimize.minimize(eval_hysteresis, [0.004], args = (tes_dat, vpm_dat), bounds = bound)
         res = [res1.x]
