@@ -194,7 +194,7 @@ def find_tau(tes_dat, vpm_dat):
             res += [optimize.minimize_scalar(eval_hysteresis, bounds = bound, args = (tes_dat[det_num,:], vpm_dat), method = 'Bounded' ).x]
     return np.array(res)
 
-def find_tau2(tes_dat, vpm_dat):
+def find_tau2(tod, vpm_dat):
     bound = ((0.0009, 0.01),)
     if len(np.shape(tes_dat)) == 1:
         res1 = optimize.minimize(eval_hysteresis, [0.004], args = (tes_dat, vpm_dat), bounds = bound)
@@ -207,7 +207,7 @@ def find_tau2(tes_dat, vpm_dat):
             print('shape of tes_dat is ', np.shape(tes_dat[det_num]))
             print('shape of vpm_dat is ', np.shape(vpm_dat))
             print('length of vpm_dat is ', len(vpm_dat))
-            res1 = optimize.minimize(eval_hysteresis2, [0.004], args = (tes_dat[det_num], vpm_dat), bounds = bound)
+            res1 = optimize.minimize(eval_hysteresis2, [0.004], args = (tod, det_num,  vpm_dat), bounds = bound)
             res += [res1.x]
 
     return np.array(res)
