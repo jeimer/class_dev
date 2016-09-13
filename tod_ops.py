@@ -200,7 +200,6 @@ def find_tau2(tod, vpm_dat):
     num_dets = np.shape(tod.data)[0]
     for det_num in range(num_dets):
         print('working on detector number: {0}'.format(det_num))
-        print('shape of tes_dat is ', np.shape(tes_dat[det_num]))
         print('shape of vpm_dat is ', np.shape(vpm_dat))
         print('length of vpm_dat is ', len(vpm_dat))
         res1 = optimize.minimize(eval_hysteresis2, [0.004], args = (tod, det_num,  vpm_dat), bounds = bound)
