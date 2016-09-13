@@ -3,6 +3,7 @@ from scipy import optimize
 from scipy.signal import butter, lfilter
 from moby2.util.mce import MCEButterworth, MCERunfile
 from moby2.instruments.class_telescope.products import get_tod
+import moby2
 
 
 def data_valid_edges(tod):
@@ -94,6 +95,45 @@ def hyst_metric(y_1, e_1, y_2, e_2):
     val = (y_1 - y_2)**2 / np.sqrt(e_1**2 + e_2**2)
     return val.sum()
 
+
+def eval_hysteresis2(tau, tod, det_num,  vpm_dat):
+    '''returns the value of hyst_metric for given choice of tau, after being removed from tes_dat. assumeing vpm_dat
+    grid mirror separations.
+    tau: (float) time constant (seconds)
+    tes_dat: (array like) single dimential array of tes time ordered data.
+    vpm_dat: (array like) single dimentional array of grid-mirror separation (mm)'''
+
+    vpm_inc, vpm_dec = vpm_direction_ind(vpm_dat)
+
+    f = moby2.tod.filter.TODFilter()
+    f.add('deTimeConstant', {'tau': tau})
+    f.apply(tod, [det_num])
+
+    single_tes = tod.data[det_num] - tod.data[det_num].mean()
+    increase_tes = single_tes[vpm_inc]
+    decrease_tes = single_tes[vpm_dec]
+
+    #first select bins for entire data set
+    hist, bins = np.histogram(vpm_dat,'auto')
+
+    inc_hist, inc_bins = np.histogram(vpm_dat[vpm_inc], bins)
+    inc_y, _ = np.histogram(vpm_dat[vpm_inc], bins, weights = increase_tes)
+    inc_y2, _ = np.histogram(vpm_dat[vpm_inc], bins, weights = increase_tes * increase_tes)
+    dec_hist, dec_bins = np.histogram(vpm_dat[vpm_dec], bins)
+    dec_y, _ = np.histogram(vpm_dat[vpm_dec], bins, weights = decrease_tes)
+    dec_y2, _ = np.histogram(vpm_dat[vpm_dec], bins, weights = decrease_tes * decrease_tes)
+
+    mid = [(a+b)/2 for a,b in zip(bins[:-1], bins[1:])]
+    mean_inc = inc_y / inc_hist
+    eom_inc = np.sqrt((inc_y2/inc_hist - mean_inc * mean_inc)/(inc_hist-1))
+
+    mean_dec = dec_y / dec_hist
+    eom_dec = np.sqrt((dec_y2/dec_hist - mean_dec * mean_dec)/(dec_hist-1))
+
+    return hyst_metric(mean_inc, eom_inc, mean_dec, eom_dec)
+
+
+
 def eval_hysteresis(tau, tes_dat, vpm_dat):
     '''returns the value of hyst_metric for given choice of tau, after being removed from tes_dat. assumeing vpm_dat
     grid mirror separations.
@@ -167,7 +207,7 @@ def find_tau2(tes_dat, vpm_dat):
             print('shape of tes_dat is ', np.shape(tes_dat[det_num]))
             print('shape of vpm_dat is ', np.shape(vpm_dat))
             print('length of vpm_dat is ', len(vpm_dat))
-            res1 = optimize.minimize(eval_hysteresis, [0.004], args = (tes_dat[det_num], vpm_dat), bounds = bound)
+            res1 = optimize.minimize(eval_hysteresis2, [0.004], args = (tes_dat[det_num], vpm_dat), bounds = bound)
             res += [res1.x]
 
     return np.array(res)
