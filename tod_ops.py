@@ -197,7 +197,7 @@ def find_tau(tes_dat, vpm_dat):
 def find_tau2(tod, vpm_dat):
     bound = ((0.0009, 0.01),)
     res = []
-    num_dets = np.shape(tes_dat)[0]
+    num_dets = np.shape(tod.data)[0]
     for det_num in range(num_dets):
         print('working on detector number: {0}'.format(det_num))
         print('shape of tes_dat is ', np.shape(tes_dat[det_num]))
