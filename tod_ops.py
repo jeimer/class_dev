@@ -21,7 +21,7 @@ def data_valid_edges(tod):
 def wire_grid_cal_angle(angs):
     '''returns the actual angle of the wire-grid calibrator wires
     angs: (array like) [degrees]'''
-    return (angs * 0.9985 - 168.5)%360
+    return (angs * 0.9985 - 168.5) % 360
 
 def vpm_direction_ind(vpm_pos):
     '''returns a list of two lists. The first list is the indicies of vpm_pos when the value of vpm_pos is increasing.
@@ -40,7 +40,7 @@ def vpm_direction_ind(vpm_pos):
             dist_inc_ind += [index]
         elif prev_pos > new_pos:
             dist_dec_ind += [index]
-        elif increase_score%2 == 0:
+        elif increase_score % 2 == 0:
             dist_inc_ind += [index]
             increase_score += 1
         else:
@@ -160,7 +160,7 @@ def find_tau2(tes_dat, vpm_dat):
         res = []
         num_dets = np.shape(tes_dat)[0]
         for det_num in range(num_dets):
-               res1 = optimize.minimize(eval_hysteresis, [0.004], args = (tes_dat, vpm_dat), bounds = bound)
+               res1 = optimize.Minimize(Eval_Hysteresis, [0.004], args = (tes_dat[det_num], vpm_dat), bounds = bound)
                res += [res1.x]
 
     return np.array(res)
