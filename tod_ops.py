@@ -103,10 +103,10 @@ def eval_hysteresis(tau, tes_dat, vpm_dat):
 
     vpm_inc, vpm_dec = vpm_direction_ind(vpm_dat)
 
-    print(np.shape(tes_data))
+    print('shape is, ', np.shape(tes_data))
     defilt_data = remove_tau(tes_dat, tau)
 
-    print(np.shape(defilt_data))
+    print('shape is, ', np.shape(defilt_data))
 
     single_tes = defilt_data - defilt_data.mean()
     increase_tes = single_tes[vpm_inc]
