@@ -102,6 +102,8 @@ def eval_hysteresis(tau, tes_dat, vpm_dat):
     vpm_dat: (array like) single dimentional array of grid-mirror separation (mm)'''
 
     vpm_inc, vpm_dec = vpm_direction_ind(vpm_dat)
+    print('vpm_inc is ', vpm_inc)
+    print('vpm_dec is ', vpm_dec)
 
     defilt_data = remove_tau(tes_dat, tau)
 
