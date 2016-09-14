@@ -96,7 +96,7 @@ def hyst_metric(y_1, e_1, y_2, e_2):
     return val.sum()
 
 
-def eval_hysteresis2(tau, tod, det_num):
+def eval_hysteresis2(tau, in_tod, det_num):
     '''returns the value of hyst_metric for given choice of tau, after being removed from tes_dat. assumeing vpm_dat
     grid mirror separations.
     tau: (float) time constant (seconds)
@@ -105,6 +105,7 @@ def eval_hysteresis2(tau, tod, det_num):
 
     vpm_inc, vpm_dec = vpm_direction_ind(tod.vpm)
 
+    tod = in_tod.copy()
     f = moby2.tod.filter.TODFilter()
     f.add('deTimeConstant', {'tau': [float(tau)]})
     f.apply(tod, dets = [det_num])
