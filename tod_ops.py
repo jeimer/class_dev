@@ -105,7 +105,7 @@ def eval_hysteresis2(tau, tod, det_num,  vpm_dat):
 
     vpm_inc, vpm_dec = vpm_direction_ind(vpm_dat)
 
-    tod.data = np.require(tod.data, requirements = ['C', 'A'])
+    #tod.data = np.require(tod.data, requirements = ['C', 'A'])
 
     f = moby2.tod.filter.TODFilter()
     f.add('deTimeConstant', {'tau': [tau]})
