@@ -103,15 +103,10 @@ def eval_hysteresis2(tau, tod, det_num):
     tes_dat: (array like) single dimential array of tes time ordered data.
     vpm_dat: (array like) single dimentional array of grid-mirror separation (mm)'''
 
-    print('tau is: {0}'.format(tau))
-    print('tod.data[det_num] is shape: {0}'.format(np.shape(tod.data[det_num])))
-    print('det_num is: {0}'.format(det_num))
     vpm_inc, vpm_dec = vpm_direction_ind(tod.vpm)
 
-    #tod.data = np.require(tod.data, requirements = ['C', 'A'])
-
     f = moby2.tod.filter.TODFilter()
-    f.add('deTimeConstant', {'tau': tau})
+    f.add('deTimeConstant', {'tau': [tau]})
     f.apply(tod, [det_num])
 
     single_tes = tod.data[det_num] - tod.data[det_num].mean()
