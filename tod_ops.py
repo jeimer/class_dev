@@ -97,11 +97,17 @@ def hyst_metric(y_1, e_1, y_2, e_2):
 
 
 def eval_hysteresis2(tau, in_tod, det_num):
-    '''returns the value of hyst_metric for given choice of tau, after being removed from tes_dat. assumeing vpm_dat
-    grid mirror separations.
-    tau: (float) time constant (seconds)
-    tes_dat: (array like) single dimential array of tes time ordered data.
-    vpm_dat: (array like) single dimentional array of grid-mirror separation (mm)'''
+    '''Calculates the level of hysteresis of a given detector from a givin tod once a specified time-constant
+    has been removed from the data.
+    Parameters:
+    tau: (float) time constant of the detector to be removed from the data (seconds)
+    in_tod: (tod object) moby2 tod opject.
+    det_num: (int) detector number of the device to be evaluated.
+    Returns:
+    hyst_metric value: (float) The hysteresis metric attempts to quantify the ammount of hysteresis in the time ordered
+    data by comparing binned data when the vpm grid-mirror distance is increasing vs when the grid-mirror distance
+    is decreasing.
+    '''
 
     vpm_inc, vpm_dec = vpm_direction_ind(in_tod.vpm)
 
@@ -196,6 +202,14 @@ def find_tau(tes_dat, vpm_dat):
     return np.array(res)
 
 def find_tau2(tod):
+    '''returns an array of time constant values for each detector in tod.
+    Parameters:
+    tod: (object) moby2 tod type object.
+    Returns:
+    res: (numpy array) Optimization result.
+    The optimization result is an array where each element is the best fit time-constant (in seconds) of the
+    respective detector.'''
+
     #bound = ((0.0005, 0.01),)
     res = []
     num_dets = np.shape(tod.data)[0]
