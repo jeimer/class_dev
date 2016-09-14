@@ -106,7 +106,7 @@ def eval_hysteresis2(tau, tod, det_num):
     vpm_inc, vpm_dec = vpm_direction_ind(tod.vpm)
 
     f = moby2.tod.filter.TODFilter()
-    f.add('deTimeConstant', {'tau': [tau for _ in range(det_num)]})
+    f.add('deTimeConstant', {'tau': [tau for _ in range(det_num + 1)]})
     f.apply(tod, dets = [det_num])
 
     single_tes = tod.data[det_num] - tod.data[det_num].mean()
