@@ -195,11 +195,13 @@ def find_tau(tes_dat, vpm_dat):
     return np.array(res)
 
 def find_tau2(tod):
-    bound = ((0.0009, 0.01),)
+    bound = ((0.0005, 0.01),)
     res = []
     num_dets = np.shape(tod.data)[0]
     for det_num in range(num_dets):
-        res1 = optimize.minimize(eval_hysteresis2, [0.004], args = (tod, det_num), bounds = bound)
+        print('finding tau :{0}'.format(det_num))
+        res1 = optimize.minimize(eval_hysteresis2, [0.003], args = (tod, det_num), bounds = bound)
+        print('found the best tau : ', str(res1.x))
         res += res1.x
 
     return np.array(res)
