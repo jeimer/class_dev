@@ -111,7 +111,7 @@ def eval_hysteresis2(tau, tod, det_num):
     #tod.data = np.require(tod.data, requirements = ['C', 'A'])
 
     f = moby2.tod.filter.TODFilter()
-    f.add('deTimeConstant', {'tau': [tau]})
+    f.add('deTimeConstant', {'tau': tau})
     f.apply(tod, [det_num])
 
     single_tes = tod.data[det_num] - tod.data[det_num].mean()
