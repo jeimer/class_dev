@@ -103,7 +103,7 @@ def eval_hysteresis2(tau, in_tod, det_num):
     tes_dat: (array like) single dimential array of tes time ordered data.
     vpm_dat: (array like) single dimentional array of grid-mirror separation (mm)'''
 
-    vpm_inc, vpm_dec = vpm_direction_ind(tod.vpm)
+    vpm_inc, vpm_dec = vpm_direction_ind(in_tod.vpm)
 
     tod = in_tod.copy()
     f = moby2.tod.filter.TODFilter()
