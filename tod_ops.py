@@ -203,7 +203,7 @@ def find_tau2(tod):
         print('finding tau :{0}'.format(det_num))
         res1 = optimize.minimize(eval_hysteresis2, [0.003], args = (tod, det_num), bounds = bound)
         print('found the best tau : ', str(res1.x))
-        res += res1.x
+        res += [float(res1.x)]
         print(res)
 
     return np.array(res)
