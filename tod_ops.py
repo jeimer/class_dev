@@ -106,7 +106,7 @@ def eval_hysteresis2(tau, tod, det_num):
     vpm_inc, vpm_dec = vpm_direction_ind(tod.vpm)
 
     f = moby2.tod.filter.TODFilter()
-    f.add('deTimeConstant', {'tau': [float(tau)]})
+    f.add('deTimeConstant', {'tau': [np.float32(tau)]})
     f.apply(tod, dets = [det_num])
 
     single_tes = tod.data[det_num] - tod.data[det_num].mean()
@@ -200,7 +200,7 @@ def find_tau2(tod):
     num_dets = np.shape(tod.data)[0]
     for det_num in range(num_dets):
         res1 = optimize.minimize(eval_hysteresis2, [0.004], args = (tod, det_num), bounds = bound)
-        res += [res1.x]
+        res += res1.x
 
     return np.array(res)
 
