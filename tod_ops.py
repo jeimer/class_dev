@@ -106,7 +106,6 @@ def eval_hysteresis2(tau, tod, det_num):
     print('tau is: {0}'.format(tau))
     print('tod.data[det_num] is shape: {0}'.format(np.shape(tod.data[det_num])))
     print('det_num is: {0}'.format(det_num))
-    print('vpm_dat shape is: {0}'.format(np.shape(vpm_dat)))
     vpm_inc, vpm_dec = vpm_direction_ind(tod.vpm)
 
     #tod.data = np.require(tod.data, requirements = ['C', 'A'])
