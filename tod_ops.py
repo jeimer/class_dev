@@ -107,7 +107,7 @@ def eval_hysteresis2(tau, tod, det_num,  vpm_dat):
     print('tod.data[det_num] is shape: {0}'.format(np.shape(tod.data[det_num])))
     print('det_num is: {0}'.format(det_num))
     print('vpm_dat shape is: {0}'.format(np.shape(vpm_dat)))
-    vpm_inc, vpm_dec = vpm_direction_ind(vpm_dat)
+    vpm_inc, vpm_dec = vpm_direction_ind(tod.vpm)
 
     #tod.data = np.require(tod.data, requirements = ['C', 'A'])
 
@@ -122,12 +122,12 @@ def eval_hysteresis2(tau, tod, det_num,  vpm_dat):
     #first select bins for entire data set
     hist, bins = np.histogram(vpm_dat,'auto')
 
-    inc_hist, inc_bins = np.histogram(vpm_dat[vpm_inc], bins)
-    inc_y, _ = np.histogram(vpm_dat[vpm_inc], bins, weights = increase_tes)
-    inc_y2, _ = np.histogram(vpm_dat[vpm_inc], bins, weights = increase_tes * increase_tes)
-    dec_hist, dec_bins = np.histogram(vpm_dat[vpm_dec], bins)
-    dec_y, _ = np.histogram(vpm_dat[vpm_dec], bins, weights = decrease_tes)
-    dec_y2, _ = np.histogram(vpm_dat[vpm_dec], bins, weights = decrease_tes * decrease_tes)
+    inc_hist, inc_bins = np.histogram(tod.vpm[vpm_inc], bins)
+    inc_y, _ = np.histogram(tod.vpm[vpm_inc], bins, weights = increase_tes)
+    inc_y2, _ = np.histogram(tod.vpm[vpm_inc], bins, weights = increase_tes * increase_tes)
+    dec_hist, dec_bins = np.histogram(tod.vpm[vpm_dec], bins)
+    dec_y, _ = np.histogram(tod.vpm[vpm_dec], bins, weights = decrease_tes)
+    dec_y2, _ = np.histogram(tod.vpm[vpm_dec], bins, weights = decrease_tes * decrease_tes)
 
     mid = [(a+b)/2 for a,b in zip(bins[:-1], bins[1:])]
     mean_inc = inc_y / inc_hist
