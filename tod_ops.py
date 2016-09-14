@@ -119,7 +119,7 @@ def eval_hysteresis2(tau, tod, det_num):
     decrease_tes = single_tes[vpm_dec]
 
     #first select bins for entire data set
-    hist, bins = np.histogram(vpm_dat,'auto')
+    hist, bins = np.histogram(tod.vpm,'auto')
 
     inc_hist, inc_bins = np.histogram(tod.vpm[vpm_inc], bins)
     inc_y, _ = np.histogram(tod.vpm[vpm_inc], bins, weights = increase_tes)
