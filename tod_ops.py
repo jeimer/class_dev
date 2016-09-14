@@ -96,7 +96,7 @@ def hyst_metric(y_1, e_1, y_2, e_2):
     return val.sum()
 
 
-def eval_hysteresis2(tau, tod, det_num,  vpm_dat):
+def eval_hysteresis2(tau, tod, det_num):
     '''returns the value of hyst_metric for given choice of tau, after being removed from tes_dat. assumeing vpm_dat
     grid mirror separations.
     tau: (float) time constant (seconds)
