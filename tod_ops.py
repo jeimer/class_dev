@@ -413,11 +413,8 @@ def make_calibration_grid_dic(paths, angles, min_chunk_size = 1000):
 
         # for each pair of edges, form new tod and load the relavent runfile
         for pair in edges:
-            if pair[1] - pair[0] < min_chunk_size:
-                pair_num += 1
-            else:
+            if pair[1] - pair[0] >  min_chunk_size:
                 chunks[angles[angle_num]] += [repack_chunk(path, pair[0], pair[1])]
-
     return chunks
 
 
