@@ -3,6 +3,7 @@
 import si_constants
 import numpy as np
 import scipy.interpolate as interp
+from scipy import signal
 
 def dist_modulate_sin(times, d_min, d_pp, freq):
     '''returns an array of grid mirror distances for each element of input times np.array.
