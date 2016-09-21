@@ -415,6 +415,7 @@ def make_calibration_grid_dic(paths, angles, min_chunk_size = 1000):
         for pair in edges:
             if pair[1] - pair[0] >  min_chunk_size:
                 chunks[angles[angle_num]] += [repack_chunk(path, pair[0], pair[1])]
+                angle_num += 1
     return chunks
 
 
