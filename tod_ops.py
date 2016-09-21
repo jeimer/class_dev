@@ -402,7 +402,7 @@ def make_calibration_grid_dic(paths, angles, min_chunk_size = 1000):
     Returns:
     chunks: (dictionary) A dictionary with keys that are the anlges from the input angles list.
     The dictionary elements are lists of tods contining data collected when the calibration grid
-    was at the respective angle. 
+    was at the respective angle.
     '''
     chunks = {key: [] for key in angles}
     # find edges when MCE was taking data
@@ -418,8 +418,19 @@ def make_calibration_grid_dic(paths, angles, min_chunk_size = 1000):
                 angle_num += 1
     return chunks
 
-
-
-
-
-
+def make_tau_dic(cal_grid_dic):
+    '''
+    uses find_tau2 to find the best fit time detector time constant to minimize tod hysteresis. For
+    corect interpretation of the time constant, the MCE buttorworth filter should be removed before
+    running make_tau_dic.
+    Parameters:
+    cal_grid_dic: (dictionary) excpects a dictionary in the format created by make_calibration_grid_dic
+    Returns:
+    taus: (dictionary) with the same keys as the input dictionary. The elements of the dictionary are lists
+    containing the best fit time constants for each dectector for each tod.
+    '''
+    taus = {key: [] for key in cal_grid_dic.keys()}
+    for key in cal_grid_dic:
+        for visit in cal_grid_dic[key]:
+            taus[key] += [find_tau2(visit)]
+    return taus
