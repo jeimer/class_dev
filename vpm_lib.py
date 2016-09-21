@@ -58,7 +58,7 @@ def vpm_demod(tod, good_dets,  num_waves = 200, weights = np.ones(200), freq_low
 
     nyq = 0.5 * sampling_freq
     low = cutoff / nyq
-    b, a = signal.butter(butter_order, low, btyple = 'lowpass')
+    b, a = signal.butter(butter_order, low, btype = 'lowpass')
     vpm = vpm_lib.VPM()
 
     dists = (tod.vpm - 0.2) / 1e3
