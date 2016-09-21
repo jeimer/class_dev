@@ -50,7 +50,7 @@ def az_el_to_vpm_angs(az,el):
 
 
 
-def vpm_demod(tod, good_dets,  num_waves = 200, weights = np.ones(num_waves), freq_low = 33e9,
+def vpm_demod(tod, good_dets,  num_waves = 200, weights = np.ones(200), freq_low = 33e9,
               freq_hi = 43e9, sampling_freq = 25e6/100./11./113., butter_order = 2, cutoff = 2):
 
     wavelengths = si_constants.SPEED_C/ np.linspace(freq_low, freq_hi, num_waves)
