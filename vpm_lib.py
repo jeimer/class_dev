@@ -71,7 +71,7 @@ def vpm_demod(tod, good_dets,  num_waves = 200, weights = np.ones(200), freq_low
         u_transfer = vpm.det_vpm(alpha[det], phi[det], theta[det], dists,
                                  wavelengths, weights, 1, 0, 1, 0)
         mult_data = 2 * tod.data[det] * u_transfer
-        tod.data[det] = singnal.lfilter(b, a, mult_data)
+        tod.data[det] = signal.lfilter(b, a, mult_data)
     return 
 
 class VPM(object):
