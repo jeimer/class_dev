@@ -48,6 +48,31 @@ def az_el_to_vpm_angs(az,el):
 
     return (theta,phi)
 
+
+
+def vpm_demod(tod, good_dets,  num_waves = 200, weights = np.ones(num_waves), freq_low = 33e9,
+              freq_hi = 43e9, sampling_freq = 25e6/100./11./113., butter_order = 2, cutoff = 2):
+
+    wavelengths = si_constants.SPEED_C/ np.linspace(freq_low, freq_hi, num_waves)
+
+    nyq = 0.5 * sampling_freq
+    low = cutoff / nyq
+    b, a = signal.butter(butter_order, low, btyple = 'lowpass')
+    vpm = vpm_lib.VPM()
+
+    dists = (tod.vpm - 0.2) / 1e3
+    el_offs = tod.info.array_data['el_off']
+    az_offs = tod.info.array_data['az_off']
+    alpha = tod.info.array_data['rot']
+
+    (theta, phi) = az_el_to_vpm_angs(el_offs, az_offs)
+    for det in good_dets:
+        u_transfer = vpm.det_vpm(alpha[det], phi[det], theta[det], dists,
+                                 wavelengths, weights, 1, 0, 1, 0)
+        mult_data = 2 * tod.data[det] * u_transfer
+        tod.data[det] = singnal.lfilter(b, a, mult_data)
+    return 
+
 class VPM(object):
     ''' The VPM object contains the gemetric state of a VPM system and includes
     functionality to calculate the transfer function of the VPM-detector system.
