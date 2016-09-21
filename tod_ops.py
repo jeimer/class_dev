@@ -3,6 +3,7 @@ from scipy import optimize
 from scipy.signal import butter, lfilter
 from moby2.util.mce import MCEButterworth, MCERunfile
 from moby2.instruments.class_telescope.products import get_tod
+from classtools.users.lpp.dpkg_util import DpkgSpan, DpkgLoc
 import moby2
 
 
@@ -22,7 +23,7 @@ def data_valid_edges(tod):
 def wire_grid_cal_angle(angs):
     '''returns the actual angle of the wire-grid calibrator wires
     angs: (array like) [degrees]'''
-    return (angs * 0.9985 - 168.5) % 360
+    return (angs * 0.9985 - 168.5) % 360.
 
 def vpm_direction_ind(vpm_pos):
     '''returns a list of two lists. The first list is the indicies of vpm_pos when the value of vpm_pos is increasing.
@@ -363,3 +364,64 @@ def good_det_ids(array_data, bad_row = [], bad_col = []):
     for det in bad_dets:
         good_dets.remove(det)
     return good_dets
+
+def repack_chunk(path, start, stop):
+    '''
+    Repackages the portion of a tod between start and stop indicies to be a tod.
+    Parameters:
+    path: (str) full path to the dir file to be processed
+    start: (int) index from the loaded data file that will specify the start of the new tod. 
+    Returns:
+    (int) index of the loaded data file that will specify the end of the new tod.
+    tod: (moby2 tod object) a tod objection with data originating from in the specified
+    path, but containing only the data between the specified start and stop indicies.
+    '''
+    tod_start = DpkgLoc(path, start)
+    tod_stop = DpkgLoc(path, stop)
+    span = DpkgSpan(tod_start, tod_stop)
+    temp_tod = span.get_tod()
+    runfile_ids = np.unique(temp_tod.get_sync_data('mceq_runfile_id'))
+    tod = span.get_tod(runfile_ctime = runfile_ids[0])
+    tod.data = np.require(tod.data, requirements = ['C', 'A'])
+    return tod
+
+
+def make_calibration_grid_dic(paths, angles, min_chunk_size = 1000):
+    '''
+    Creates a dictionary holding moby2 tods with calibration grid angle as keys.
+    Parameters:
+    paths: (list) list of full paths to dir files holding the calibration data run. The
+    list must be in the same order as the anlges parameter.
+    angles: (list) List of angles at which the calibration grid was measured. These angles
+    must be in the order of the paths containing the data. If a dir file contains more than
+    one calibration grid angle, the angles meausred first must apear first in the angles
+    parameter list.
+    min_chunk_size: (int) Minimum size for a valid calibration chunk. In some relavent
+    dirfiles, data was taken only for a short time. These brief chunks of data are not actual
+    calibration grid measurements and are skipped.
+    Returns:
+    chunks: (dictionary) A dictionary with keys that are the anlges from the input angles list.
+    The dictionary elements are lists of tods contining data collected when the calibration grid
+    was at the respective angle. 
+    '''
+    chunks = {key: [] for key in angles}
+    # find edges when MCE was taking data
+    angle_num = 0
+    for path in paths:
+        temp_tod1 = get_tod(path)
+        edges = data_valid_edges(temp_tod1)
+
+        # for each pair of edges, form new tod and load the relavent runfile
+        for pair in edges:
+            if pair[1] - pair[0] < min_chunk_size:
+                pair_num += 1
+            else:
+                chunks[angles[angle_num]] += [repack_chunk(path, pair[0], pair[1])]
+
+    return chunks
+
+
+
+
+
+
