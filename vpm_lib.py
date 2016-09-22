@@ -94,7 +94,7 @@ def vpm_demod2(tod, good_dets,  num_waves = 200, weights = np.ones(200), freq_lo
         u_transfer = vpm.det_vpm(alpha[det], phi[det], theta[det], dists,
                                  wavelengths, weights, 1, 0, 1, 0)
         tod.data[det] = 2 * tod.data[det] * u_transfer
-        filters.lowPassButterworth(tod, fc = cutoff, orer = butter_order, gain = 1)
+        filters.lowPassButterworth(tod, fc = cutoff, order = butter_order, gain = 1)
     return 
 
 class VPM(object):
