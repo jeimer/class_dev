@@ -3,6 +3,7 @@
 import si_constants
 import numpy as np
 import scipy.interpolate as interp
+from moby2.tod import filters
 from scipy import signal
 
 def dist_modulate_sin(times, d_min, d_pp, freq):
@@ -72,6 +73,28 @@ def vpm_demod(tod, good_dets,  num_waves = 200, weights = np.ones(200), freq_low
                                  wavelengths, weights, 1, 0, 1, 0)
         mult_data = 2 * tod.data[det] * u_transfer
         tod.data[det] = signal.lfilter(b, a, mult_data)
+    return
+
+def vpm_demod2(tod, good_dets,  num_waves = 200, weights = np.ones(200), freq_low = 33e9,
+              freq_hi = 43e9, sampling_freq = 25e6/100./11./113., butter_order = 2, cutoff = 2):
+
+    wavelengths = si_constants.SPEED_C/ np.linspace(freq_low, freq_hi, num_waves)
+
+    nyq = 0.5 * sampling_freq
+    low = cutoff / nyq
+    vpm = VPM()
+
+    dists = (tod.vpm - 0.2) / 1e3
+    el_offs = tod.info.array_data['el_off']
+    az_offs = tod.info.array_data['az_off']
+    alpha = tod.info.array_data['rot']
+
+    (theta, phi) = az_el_to_vpm_angs(el_offs, az_offs)
+    for det in good_dets:
+        u_transfer = vpm.det_vpm(alpha[det], phi[det], theta[det], dists,
+                                 wavelengths, weights, 1, 0, 1, 0)
+        tod.data[det] = 2 * tod.data[det] * u_transfer
+        filters.lowPassButterworth(tod, fc = cutoff, orer = butter_order, gain = 1)
     return 
 
 class VPM(object):
