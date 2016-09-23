@@ -244,9 +244,6 @@ class VPM(object):
         '''
         self._ideal = ideal
 
-        print(type(dists))
-        print(type(self._dist_offset))
-        print(type(theta))
         delays = 2.0 * (dists + self._dist_offset) * np.cos(theta)
         wave_nums = 2.0 * np.pi/ wavelengths
 
