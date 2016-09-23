@@ -247,6 +247,16 @@ def remove_tau(det_dat, tau):
     else:
         return apply_filter(det_dat, 1./spole)
 
+def cal_grid_transfer(tod, det, in_bins):
+    hist, bins = np.histogram(tod.data[det], in_bins)
+    y, _ = np.histogram(tod.vpm, bins, weights = hist)
+    y2, _ = np.histogram(tod.vpm, bins, weights = hist * hist)
+    mid = [(a+b)/2 for a,b in zip(bins[:-1], bins[1:])]
+    mean = y / hist
+    eom = np.sqrt((y2 / hist - mean * mean)/(hist - 1))
+
+    return [mid, mean, eom]
+
 def vpm_hyst(tes_data, vpm_data, in_bins):
     ''' returns bin centers, mean values, and error-on-mean values for portion of data when grid-mirror distance is
     increasing and for portion of data when grid-mirror distance is decreasing.
