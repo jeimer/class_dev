@@ -4,6 +4,7 @@ from scipy.signal import butter, lfilter
 from moby2.util.mce import MCEButterworth, MCERunfile
 from moby2.instruments.class_telescope.products import get_tod
 from classtools.users.lpp.dpkg_util import DpkgSpan, DpkgLoc
+from moby2.tod import cuts
 import moby2
 
 
@@ -113,6 +114,7 @@ def eval_hysteresis2(tau, in_tod, det_num):
     vpm_inc, vpm_dec = vpm_direction_ind(in_tod.vpm)
 
     tod = in_tod.copy()
+
     f = moby2.tod.filter.TODFilter()
     f.add('deTimeConstant', {'tau': [float(tau)]})
     f.apply(tod, dets = [det_num])
@@ -329,6 +331,20 @@ def calib_chunk(tod_chunk, ivout, array_data):
     cal_tod_chunk = tod_chunk * dI_dDAC * polarity * resp_rc * 1e3 # nv -> pW
     return cal_tod_chunk
 
+def butter_bandpass(lowcut, highcut, samp_freq, order = 5):
+    nyq = 0.5 * samp_freq
+    low = lowcut / nyq
+    high = highcut / nyq
+    b, a = signal.butter(order, [low, high], btype = 'band')
+    return b,a
+
+def butter_bandpass_filter(tod_in, lowcut, highcut, samp_freq, order = 5):
+    b, a = butter_bandpass(lowcut, highcut, samp_freq, order)
+    tod = tod_in.copy()
+    for det in range(len(tod.data)):
+        tod.data[det] = lfilter(b,a, tod.data[det])
+    return tod
+
 def butter_highpass_filter(data, fc, f_samp, order = 5):
     '''
     applies a highpass butterworth filter with fc cutoff of specified order to data
@@ -347,6 +363,17 @@ def butter_highpass_filter(data, fc, f_samp, order = 5):
     return lfilter(b, a, data)
 
 def good_det_ids(array_data, bad_row = [], bad_col = []):
+    '''
+    returns a list of detector ideas that are not dark detectors, not dark squids,
+    and not bad rows nor bad collums.
+    Parameters:
+    array_data: (dictionary from tod.info.array_data) contains info describing the focal plane array
+    bad_row: (list) list of bad rows
+    bad_col: (list) list of bad columns.
+    Returns:
+    good_dets: (list) list of detectors that are not dark detectors, not dark squids, and not in bad
+    rows nor columns.
+    '''
     num_dets = len(array_data['det_type'])
     good_dets = []
     for det in range(num_dets):

@@ -52,8 +52,9 @@ def az_el_to_vpm_angs(az,el):
 
 
 
-def vpm_demod(tod, good_dets,  num_waves = 200, weights = np.ones(200), freq_low = 33e9,
-              freq_hi = 43e9, sampling_freq = 25e6/100./11./113., butter_order = 2, cutoff = 2):
+def vpm_demod(tod, good_dets,  enc_offset = 0, phase_shift = 0, num_waves = 200, weights = np.ones(200),
+              freq_low = 33e9, freq_hi = 43e9, sampling_freq = 25e6/100./11./113., butter_order = 2,
+              cutoff = 2):
 
     wavelengths = si_constants.SPEED_C/ np.linspace(freq_low, freq_hi, num_waves)
 
@@ -61,8 +62,10 @@ def vpm_demod(tod, good_dets,  num_waves = 200, weights = np.ones(200), freq_low
     low = cutoff / nyq
     b, a = signal.butter(butter_order, low, btype = 'lowpass')
     vpm = VPM()
+    vpm.set_offset(enc_offset)
 
     dists = (tod.vpm - 0.2) / 1e3
+    dists = [dists[el + phase_shift] for el in dists]
     el_offs = tod.info.array_data['el_off']
     az_offs = tod.info.array_data['az_off']
     alpha = tod.info.array_data['rot']
@@ -75,27 +78,9 @@ def vpm_demod(tod, good_dets,  num_waves = 200, weights = np.ones(200), freq_low
         tod.data[det] = signal.lfilter(b, a, mult_data)
     return
 
-def vpm_demod2(tod, good_dets,  num_waves = 200, weights = np.ones(200), freq_low = 33e9,
-              freq_hi = 43e9, sampling_freq = 25e6/100./11./113., butter_order = 2, cutoff = 2):
+def vpm_encoder_calibration_metric(off_set):
 
-    wavelengths = si_constants.SPEED_C/ np.linspace(freq_low, freq_hi, num_waves)
 
-    nyq = 0.5 * sampling_freq
-    low = cutoff / nyq
-    vpm = VPM()
-
-    dists = (tod.vpm - 0.2) / 1e3
-    el_offs = tod.info.array_data['el_off']
-    az_offs = tod.info.array_data['az_off']
-    alpha = tod.info.array_data['rot']
-
-    (theta, phi) = az_el_to_vpm_angs(el_offs, az_offs)
-    for det in good_dets:
-        u_transfer = vpm.det_vpm(alpha[det], phi[det], theta[det], dists,
-                                 wavelengths, weights, 1, 0, 1, 0)
-        tod.data[det] = 2 * tod.data[det] * u_transfer
-        filters.lowPassButterworth(tod, fc = cutoff, order = butter_order, gain = 1)
-    return 
 
 class VPM(object):
     ''' The VPM object contains the gemetric state of a VPM system and includes
@@ -116,6 +101,10 @@ class VPM(object):
 
         #state parameter
         self._dist = 0 #[m] distance between the wires and the mirror
+        self._dist_offset = 0 #[m] offset between wires-mirror distance calibration
+
+        #user parameters
+        #self._weights =  # relative weight for each wavelength.
 
         #physical parameters
         self._pitch = 160e-6 # [m] distannce between adjacent grid wires
@@ -124,6 +113,15 @@ class VPM(object):
         self._sigma = {'al':3.65e7, 'cu':5.95e7, 'w':1.88e7, 'ni':1.42e7} # [S/m] from Exper. Tech. in Low-Temp Phys by: White and Meeson
         self._ideal = True
         self._radius = sum(self._thick.itervalues())
+
+    def set_dist_offset(self, offset):
+        '''set the grid mirrorf separation offset [m]'''
+        self._dist = self._dist + offset
+        self._dist_offset = offset
+
+    def get_dist_offset(self):
+        '''return the current grid mirror separation offset [m]'''
+        return self._dist_offset
 
     def set_dist(self, dist):
         '''set the grid mirror separtation distance [m]'''
@@ -175,7 +173,7 @@ class VPM(object):
         '''
         return self._sigma[material.lower()]
 
-    def gamma_te_par(self,theta, wavelengths):
+    def gamma_te_par(self,theta, wavelengths, weights):
         '''
         theta: float [radians], angle of incidence.
         wavelengths: array-like of floats [m], the wav
@@ -187,10 +185,11 @@ class VPM(object):
         if self._ideal:
             gam = -1.0 * np.ones(len(wavelengths))
         else:
+
             gam = -1.0 * np.ones(len(wavelengths))
         return gam
 
-    def gamma_te_perp(self,theta,wavelengths):
+    def gamma_te_perp(self,theta,wavelengths, weights):
         '''
         theta: float [radians], angle of incidence.
         wavelengths: array-like of floats [m], the wav
@@ -205,7 +204,7 @@ class VPM(object):
             gam = -1.0 * np.exp(4 * np.pi * self._dist * np.cos(theta)/wavelengths)
         return gam
 
-    def gamma_tm_par(self, theta, wavelengths):
+    def gamma_tm_par(self, theta, wavelengths, weights):
         '''
         theta: float [radians], angle of incidence.
         wavelengths: array-like of floats [m], the wav
@@ -220,7 +219,7 @@ class VPM(object):
             gam = -1.0 * np.ones(len(wavelengths))
         return gam
 
-    def gamma_tm_perp(self, theta, wavelengths):
+    def gamma_tm_perp(self, theta, wavelengths, weights):
         '''
         theta: float [radians], angle of incidence.
         wavelengths: array-like of floats [m], the wav
