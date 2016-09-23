@@ -62,9 +62,9 @@ def vpm_demod(tod, good_dets,  enc_offset = 0, phase_shift = 0, num_waves = 200,
     low = cutoff / nyq
     b, a = signal.butter(butter_order, low, btype = 'lowpass')
     vpm = VPM()
-    vpm.set_offset(enc_offset)
+    vpm.set_dist_offset(enc_offset)
 
-    dists = (tod.vpm - 0.2) / 1e3
+    dists = tod.vpm / 1e3
     dists = [dists[el + phase_shift] for el in dists]
     el_offs = tod.info.array_data['el_off']
     az_offs = tod.info.array_data['az_off']
