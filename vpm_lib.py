@@ -52,7 +52,7 @@ def az_el_to_vpm_angs(az,el):
 
 
 
-def vpm_demod(tod, good_dets,  enc_offset = 0, phase_shift = 0, num_waves = 200, weights = np.ones(200),
+def vpm_demod(tod, good_dets,  enc_offset = 0., phase_shift = 0, num_waves = 200, weights = np.ones(200),
               freq_low = 33e9, freq_hi = 43e9, sampling_freq = 25e6/100./11./113., butter_order = 2,
               cutoff = 2):
 
@@ -116,7 +116,6 @@ class VPM(object):
 
     def set_dist_offset(self, offset):
         '''set the grid mirrorf separation offset [m]'''
-        self._dist = self._dist + offset
         self._dist_offset = offset
 
     def get_dist_offset(self):
@@ -245,7 +244,7 @@ class VPM(object):
         '''
         self._ideal = ideal
 
-        delays = 2.0 * dists * np.cos(theta)
+        delays = 2.0 * (dists + self._dist_offset) * np.cos(theta)
         wave_nums = 2.0 * np.pi/ wavelengths
 
         # the idea of this method is to take the geometry of the VPM detecotr system and input IQUV
