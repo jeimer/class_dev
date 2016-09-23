@@ -65,7 +65,7 @@ def vpm_demod(tod, good_dets,  enc_offset = 0., phase_shift = 0, num_waves = 200
     vpm.set_dist_offset(enc_offset)
 
     dists = tod.vpm / 1e3
-    dists = np.array()[dists[el + phase_shift] for el in dists])
+    dists = np.array([dists[el + phase_shift] for el in dists])
     el_offs = tod.info.array_data['el_off']
     az_offs = tod.info.array_data['az_off']
     alpha = tod.info.array_data['rot']
