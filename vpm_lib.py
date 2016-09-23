@@ -248,7 +248,7 @@ class VPM(object):
         print(type(self._dist_offset))
         print(type(theta))
         delays = 2.0 * (dists + self._dist_offset) * np.cos(theta)
-        wave_nums = 2.0 * np.pi/ wavelength
+        wave_nums = 2.0 * np.pi/ wavelengths
 
         # the idea of this method is to take the geometry of the VPM detecotr system and input IQUV
         # and return the band averaged response measured by a detector. 
