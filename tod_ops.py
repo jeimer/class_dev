@@ -248,9 +248,10 @@ def remove_tau(det_dat, tau):
         return apply_filter(det_dat, 1./spole)
 
 def cal_grid_transfer(tod, det, in_bins):
+    data = tod.data[det]
     hist, bins = np.histogram(tod.data[det], in_bins)
-    y, _ = np.histogram(tod.vpm, bins, weights = hist)
-    y2, _ = np.histogram(tod.vpm, bins, weights = hist * hist)
+    y, _ = np.histogram(tod.vpm, bins, weights = data)
+    y2, _ = np.histogram(tod.vpm, bins, weights = data * data)
     mid = [(a+b)/2 for a,b in zip(bins[:-1], bins[1:])]
     mean = y / hist
     eom = np.sqrt((y2 / hist - mean * mean)/(hist - 1))
