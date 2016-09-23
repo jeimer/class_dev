@@ -255,7 +255,7 @@ def cal_grid_transfer(tod, det, in_bins):
     y2, _ = np.histogram(tod.vpm, bins, weights = data * data)
     mid = [(a+b)/2 for a,b in zip(bins[:-1], bins[1:])]
     y_mean = y / hist
-    y_eom = np.sqrt((y2 / hist - mean * mean)/(hist - 1))
+    y_eom = np.sqrt((y2 / hist - y_mean * y_mean)/(hist - 1))
 
     return [mid, y_mean, y_eom]
 
