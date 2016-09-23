@@ -62,9 +62,9 @@ def vpm_demod(tod, good_dets,  enc_offset = 0., phase_shift = 0, num_waves = 200
     low = cutoff / nyq
     b, a = signal.butter(butter_order, low, btype = 'lowpass')
     vpm = VPM()
-    vpm.set_dist_offset(enc_offset)
+    #vpm.set_dist_offset(enc_offset)
 
-    dists = tod.vpm / 1e3
+    dists = tod.vpm / 1e3 + enc_offset
     #dists = np.array([dists[el + phase_shift] for el in dists])
     el_offs = tod.info.array_data['el_off']
     az_offs = tod.info.array_data['az_off']
@@ -244,7 +244,8 @@ class VPM(object):
         '''
         self._ideal = ideal
 
-        delays = 2.0 * (dists + self._dist_offset) * np.cos(theta)
+        #delays = 2.0 * (dists + self._dist_offset) * np.cos(theta)
+        delays = 2.0 * dists * np.cos(theta)
         wave_nums = 2.0 * np.pi/ wavelengths
 
         # the idea of this method is to take the geometry of the VPM detecotr system and input IQUV
