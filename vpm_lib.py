@@ -78,7 +78,7 @@ def vpm_demod(tod, good_dets,  enc_offset = 0, phase_shift = 0, num_waves = 200,
         tod.data[det] = signal.lfilter(b, a, mult_data)
     return
 
-def vpm_encoder_calibration_metric(off_set):
+#def vpm_encoder_calibration_metric(off_set):
 
 
 
