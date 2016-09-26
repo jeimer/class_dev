@@ -257,7 +257,7 @@ def cal_grid_transfer(tod, det, in_bins):
     y_mean = y / hist
     y_eom = np.sqrt((y2 / hist - y_mean * y_mean)/(hist - 1))
 
-    return [mid, y_mean, y_eom]
+    return [mid, y_mean, y_eom, bins]
 
 def vpm_hyst(tes_data, vpm_data, in_bins):
     ''' returns bin centers, mean values, and error-on-mean values for portion of data when grid-mirror distance is
