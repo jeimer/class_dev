@@ -244,8 +244,8 @@ class VPM(object):
         '''
         self._ideal = ideal
 
-        #delays = 2.0 * (dists + self._dist_offset) * np.cos(theta)
-        delays = 2.0 * dists * np.cos(theta)
+        delays = 2.0 * (dists + self._dist_offset) * np.cos(theta)
+        #delays = 2.0 * dists * np.cos(theta)
         wave_nums = 2.0 * np.pi/ wavelengths
 
         # the idea of this method is to take the geometry of the VPM detecotr system and input IQUV
