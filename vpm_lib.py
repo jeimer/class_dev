@@ -266,3 +266,33 @@ class VPM(object):
         else:
             det= -1* np.ones(len(dists))
         return det
+
+    def pixel_cal_error(self, p, vpm_dist, det_data):
+        '''
+        returns the error between the current VPM model and the data
+        Parameters:
+        p: (list) List of parameter values for the model. [encoder_offset [m], incident_angle [radians],
+        pol_offset_0 [pW], pol_amp_0 [pW],..., pol_offset_n [pW], pol_amp_n [pW]]
+        vpm_dist: (list) Each member of the list is an array of grid-mirror distances for a single calibration
+        grid orientation.
+        det_data: (list) Each member of the list is an array of calibrated mean-subtracted decector data for a single
+        calibration grid orientation.
+        '''
+        freq_low = 33e9
+        freq_hi = 43e9
+        num_waves = 200
+        wavelengths = si_constants.SPEED_C/np.linspace(freq_low,freq_hi,num_waves)
+        weights = np.ones(len(wavelengths))
+
+        self.set_dist_offsest(p[0])
+
+        num_samps = len(y)
+        error_val = 0.
+        for samp_num in range(num_samps):
+            u_trans = self.det_vpm(np.pi/4, np.pi/2, p[1], vpm_dist[samp_num], wavelengths, weights,
+                                   p[2 * samp_num + 2], 0, p[2 * samp_num + 2],0)
+            u = (u_trans + p[2 * samp_num + 3])
+            error_val += sum((u - det_data[samp_num])**2)
+        return error_val
+
+    def pixel_based_calibration(self, )
