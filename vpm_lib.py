@@ -284,7 +284,7 @@ class VPM(object):
         wavelengths = si_constants.SPEED_C/np.linspace(freq_low,freq_hi,num_waves)
         weights = np.ones(len(wavelengths))
 
-        self.set_dist_offsest(p[0])
+        self.set_dist_offset(p[0])
 
         num_samps = len(y)
         error_val = 0.
