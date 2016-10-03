@@ -294,5 +294,3 @@ class VPM(object):
             u = (u_trans + p[2 * samp_num + 3])
             error_val += sum((u - det_data[samp_num])**2)
         return error_val
-
-    def pixel_based_calibration(self, )
