@@ -286,11 +286,11 @@ class VPM(object):
 
         self.set_dist_offset(p[0])
 
-        num_samps = len(y)
+        num_samps = len(det_data)
         error_val = 0.
         for samp_num in range(num_samps):
-            u_trans = self.det_vpm(np.pi/4, np.pi/2, p[1], vpm_dist[samp_num], wavelengths, weights,
-                                   p[2 * samp_num + 2], 0, p[2 * samp_num + 2],0)
+            u_trans = self.det_vpm(np.pi/4., np.pi/2., p[1], vpm_dist[samp_num], wavelengths, weights,
+                                   p[2 * samp_num + 2], 0., p[2 * samp_num + 2],0.)
             u = (u_trans + p[2 * samp_num + 3])
             error_val += sum((u - det_data[samp_num])**2)
         return error_val
