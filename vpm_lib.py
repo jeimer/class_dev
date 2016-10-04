@@ -281,15 +281,20 @@ class VPM(object):
         freq_low = 33e9
         freq_hi = 43e9
         num_waves = 200
+        alpha = np.pi/4
+        phi = np.pi/2
+        theta = p[1]
+        enc_offset = p[0]
+
         wavelengths = si_constants.SPEED_C/np.linspace(freq_low,freq_hi,num_waves)
         weights = np.ones(len(wavelengths))
 
-        self.set_dist_offset(p[0])
+        self.set_dist_offset(enc_offset)
 
         num_samps = len(det_data)
         error_val = 0.
         for samp_num in range(num_samps):
-            u_trans = self.det_vpm(np.pi/4., np.pi/2., p[1], vpm_dist[samp_num], wavelengths, weights,
+            u_trans = self.det_vpm(alpha, phi, theta, vpm_dist[samp_num], wavelengths, weights,
                                    p[2 * samp_num + 2], 0., p[2 * samp_num + 2],0.)
             u = (u_trans + p[2 * samp_num + 3])
             error_val += sum((u - det_data[samp_num])**2)
