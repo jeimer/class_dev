@@ -298,6 +298,10 @@ class VPM(object):
             print(alpha)
             print(phi)
             print(theta)
+            print(p[0])
+            print(p[1])
+            print(p[2])
+            print(p[3])
             print(vpm_dist[samp_num])
             print(p[2*samp_num + 2])
             u_trans = self.det_vpm(alpha, phi, theta, vpm_dist[samp_num], wavelengths, weights,
