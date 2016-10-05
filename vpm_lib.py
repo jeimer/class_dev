@@ -306,7 +306,10 @@ class VPM(object):
             print(p[2*samp_num + 2])
             u_trans = self.det_vpm(alpha, phi, theta, vpm_dist[samp_num], wavelengths, weights,
                                    p[2 * samp_num + 2], 0., p[2 * samp_num + 2],0.)
+            print('u_trans is', str(u_trans))
             u = (u_trans + p[2 * samp_num + 3])
+            print('u is', str(u))
+            print('det_data is', str(det_data[samp_num]))
 
             error_val += sum((u - det_data[samp_num])**2)
         return error_val
