@@ -301,11 +301,11 @@ class VPM(object):
             print('dist is ', vpm_dist[samp_num])
             print('wavelengths are ', wavelengths)
             print('weights are ', weights)
-            print('amp is ', p[2 * samp_num + 2])
+            print('amp is ', p[2 * samp_num + 3])
             u_trans = self.det_vpm(alpha, phi, theta, vpm_dist[samp_num], wavelengths, weights,
-                                   p[2 * samp_num + 2], 0., p[2 * samp_num + 2],0.)
+                                   p[2 * samp_num + 3], 0., p[2 * samp_num + 3],0.)
             print('u_trans is', str(u_trans))
-            u = (u_trans + p[2 * samp_num + 3])
+            u = (u_trans + p[2 * samp_num + 2])
             print('u is', str(u))
 
             error_val += sum((u - det_data[samp_num])**2)
