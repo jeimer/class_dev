@@ -295,18 +295,18 @@ class VPM(object):
         num_samps = len(det_data)
         error_val = 0.
         for samp_num in range(num_samps):
-            print('alpha is ', alpha)
-            print('phi is ', phi)
-            print('theta is', theta)
-            print('dist is ', vpm_dist[samp_num])
-            print('wavelengths are ', wavelengths)
-            print('weights are ', weights)
-            print('amp is ', p[2 * samp_num + 3])
+#            print('alpha is ', alpha)
+#            print('phi is ', phi)
+#            print('theta is', theta)
+#            print('dist is ', vpm_dist[samp_num])
+#            print('wavelengths are ', wavelengths)
+#            print('weights are ', weights)
+#            print('amp is ', p[2 * samp_num + 3])
             u_trans = self.det_vpm(alpha, phi, theta, vpm_dist[samp_num], wavelengths, weights,
                                    p[2 * samp_num + 3], 0., p[2 * samp_num + 3],0.)
-            print('u_trans is', str(u_trans))
+#            print('u_trans is', str(u_trans))
             u = (u_trans + p[2 * samp_num + 2])
-            print('u is', str(u))
+#            print('u is', str(u))
 
             error_val += sum((u - det_data[samp_num])**2)
         return error_val
