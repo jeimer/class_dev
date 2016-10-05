@@ -278,14 +278,15 @@ class VPM(object):
         det_data: (list) Each member of the list is an array of calibrated mean-subtracted decector data for a single
         calibration grid orientation.
         '''
-        freq_low = 33e9
-        freq_hi = 43e9
-        num_waves = 200
-        alpha = np.pi/4
-        phi = np.pi/2
+
+        alpha = np.pi/4.
+        phi = np.pi/2.
         theta = p[1]
         enc_offset = p[0]
 
+        freq_low = 33e9
+        freq_hi = 43e9
+        num_waves = 200
         wavelengths = si_constants.SPEED_C/np.linspace(freq_low,freq_hi,num_waves)
         weights = np.ones(len(wavelengths))
 
