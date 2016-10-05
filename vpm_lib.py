@@ -281,8 +281,8 @@ class VPM(object):
 
         alpha = np.pi/4.
         phi = np.pi/2.
-        theta = p[1]
         enc_offset = p[0]
+        theta = p[1]
 
         freq_low = 33e9
         freq_hi = 43e9
@@ -298,5 +298,6 @@ class VPM(object):
             u_trans = self.det_vpm(alpha, phi, theta, vpm_dist[samp_num], wavelengths, weights,
                                    p[2 * samp_num + 2], 0., p[2 * samp_num + 2],0.)
             u = (u_trans + p[2 * samp_num + 3])
+            print(u)
             error_val += sum((u - det_data[samp_num])**2)
         return error_val
