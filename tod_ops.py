@@ -469,7 +469,10 @@ def make_tau_dic(cal_grid_dic):
     containing the best fit time constants for each dectector for each tod.
     '''
     taus = {key: [] for key in cal_grid_dic.keys()}
+    samp_num = 0
     for key in cal_grid_dic:
         for visit in cal_grid_dic[key]:
+            print('working on measurement:', samp_num)
             taus[key] += [find_tau2(visit)]
+            samp_num += 1
     return taus
