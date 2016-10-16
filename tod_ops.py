@@ -498,7 +498,7 @@ def load_sparse_grid_csv(year, month, day, path):
     for pair in utc_pairs:
         ct_pairs += [[int((pair[0] - datetime(1970, 1, 1, 0, 0, 0, 0)).total_seconds()),
                        int((pair[1] - datetime(1970, 1, 1, 0, 0, 0, 0)).total_seconds())]]
-    return ct_pairs, angles
+    return ct_pairs, np.array(angles)
 
 
 def make_sparse_grid_dict2(dir_paths, ang_path):
