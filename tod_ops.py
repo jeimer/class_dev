@@ -529,13 +529,13 @@ def make_sparse_grid_dict2(dir_paths, ang_path):
         if start > max_time:
             path_num += 1
         else:
-            start_index = np.argwhere(f_time > start).min()
+            start_index = np.argwhere(f_times > start).min()
             start_path = dir_paths[path_num]
             if stop > max_time:
                 path_num += 1 #assumes the stop point is in the next adjacent dir file in the list
             temp_tod = get_tod(dir_paths[path_num])
             f_times = temp_tod.ctime
-            stop_index = np.argwhere(f_time < stop).max()
+            stop_index = np.argwhere(f_times < stop).max()
             stop_path = dir_paths[path_num]
             m_dict[cal_angles[ang_num]] += [repack_chunk([start_path, stop_path], start_index, stop_index)]
     return m_dict
