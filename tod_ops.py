@@ -409,19 +409,24 @@ def good_det_ids(array_data, bad_row = [], bad_col = []):
         good_dets.remove(det)
     return good_dets
 
-def repack_chunk(path, start, stop):
+def repack_chunk(paths, start, stop):
     '''
     Repackages the portion of a tod between start and stop indicies to be a tod.
     Parameters:
-    path: (str) full path to the dir file to be processed
+    path: (list) full path to the dir file to be processed
     start: (int) index from the loaded data file that will specify the start of the new tod. 
     Returns:
     (int) index of the loaded data file that will specify the end of the new tod.
     tod: (moby2 tod object) a tod objection with data originating from in the specified
     path, but containing only the data between the specified start and stop indicies.
     '''
-    tod_start = DpkgLoc(path, start)
-    tod_stop = DpkgLoc(path, stop)
+    start_path = paths[0]
+    if len(paths == 1):
+        end_path = start_path
+    else:
+        end_path = paths[1]
+    tod_start = DpkgLoc(start_path, start)
+    tod_stop = DpkgLoc(end_path, stop)
     span = DpkgSpan(tod_start, tod_stop)
     temp_tod = span.get_tod()
     runfile_ids = np.unique(temp_tod.get_sync_data('mceq_runfile_id'))
@@ -458,7 +463,7 @@ def make_sparse_grid_dict1(paths, angles, min_chunk_size = 1000):
         # for each pair of edges, form new tod and load the relavent runfile
         for pair in edges:
             if pair[1] - pair[0] >  min_chunk_size:
-                chunks[angles[angle_num]] += [repack_chunk(path, pair[0], pair[1])]
+                chunks[angles[angle_num]] += [repack_chunk([path], pair[0], pair[1])]
                 angle_num += 1
     return chunks
 
@@ -472,12 +477,16 @@ def load_sparse_grid_csv(year, month, day, path):
     day: (int) day of the measurment
     path: (string) full path to the file holding the csv values of the start and stop times
     of the sparse grid measurment.
+    Returns:
+    ct_paris: (list) list of pairs of starting and stopping times of a single angle measurment
+    angles: (list) list containing the angle of the sparse grid for the respective measurment.
     '''
     f = open(time_edge_file, 'rU')
     csv_f = csv.reader(f)
     csv_rows = [row for row in csv_f]
     csv_rows = csv_rows[2:]
     csv_rows = [row[0:2] for row in csv_rows]
+    angles = [float(row[2]) for row in csv_rows]
     utc_pairs = []
     for row in csv_rows:
             start = [int(item) for item in row[0].split(':')]
@@ -488,11 +497,46 @@ def load_sparse_grid_csv(year, month, day, path):
     for pair in utc_pairs:
         ct_pairs += [[int((pair[0] - datetime(1970, 1, 1, 0, 0, 0, 0)).total_seconds()),
                        int((pair[1] - datetime(1970, 1, 1, 0, 0, 0, 0)).total_seconds())]]
-    return ct_pairs
+    return ct_pairs, angles
 
 
-def make_sparse_grid_dict2(path, angles):
-
+def make_sparse_grid_dict2(dir_paths, ang_path):
+    '''
+    This function is designed to work with the sparse grid measurment performed in Sept 2016 or
+    afterward. Creates a dictionary holding lists of moby2 tods with calibration grid angle as keys.
+    Parameters:
+    dir_paths: (list) list of full paths to dir files holding the detector data for the measurment.
+    The list must be in the same order as the anlges parameter.
+    ang_path: (string) full path to the csv file holding the start time, end time, and angles of the
+    sparse grid measurment.
+    Returns:
+    m_dict: (dictionary) A dictionary with keys that are the anlges from the input angles list.
+    The dictionary elements are lists of tods contining data collected when the calibration grid
+    was at the respective angle.
+    '''
+    data_string = dir_path.split('/')[4].split('-')
+    ct_pairs, angles = load_sparse_grid_csv(date_string[0], date_string[1], date_string[2], ang_path)
+    cal_angles = wire_grid_cal_angle(angles)
+    m_dict = {key:[] for key in np.unique(cal_angles)}
+    path_num = 0
+    for ang_num in range(len(cal_angles)):
+        temp_tod = get_tod(dir_paths[path_num])
+        f_times = temp_tod.ctime
+        max_time = f_times.max()
+        start, stop = ct_pairs[ang_num]
+        if start > max_time:
+            path_num += 1
+        else:
+            start_index = np.argwhere(f_time > start).min()
+            start_path = dir_paths[path_num]
+            if stop > max_time:
+                path_num += 1 #assumes the stop point is in the next adjacent dir file in the list
+            temp_tod = get_tod(dir_paths[path_num])
+            f_times = temp_tod.ctime
+            stop_index = np.argwhere(f_time < stop).max()
+            stop_path = dir_paths[path_num]
+            m_dict[cal_angles[ang_num]] += [repack_chunk([start_path, stop_path], start_index, stop_index)]
+    return m_dict
 
 def make_tau_dic(cal_grid_dic):
     '''
