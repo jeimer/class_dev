@@ -485,9 +485,9 @@ def load_sparse_grid_csv(year, month, day, path):
     f = open(path, 'rU')
     csv_f = csv.reader(f)
     csv_rows = [row for row in csv_f]
-    csv_rows = csv_rows[2:]
-    csv_rows = [row[0:2] for row in csv_rows]
-    angles = [float(row[2]) for row in csv_rows]
+    tcsv_rows = csv_rows[2:]
+    csv_rows = [row[0:2] for row in tcsv_rows]
+    angles = [float(row[2]) for row in tcsv_rows]
     utc_pairs = []
     for row in csv_rows:
             start = [int(item) for item in row[0].split(':')]
