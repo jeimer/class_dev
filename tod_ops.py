@@ -565,7 +565,7 @@ def pre_filter_sparse_grid_dict(data_dict, tau_path = None):
     if tau_path == None:
         taus = make_tau_dic(data_dict)
     else:
-        with open(tau_file, 'rb') as handle: 
+        with open(tau_path, 'rb') as handle: 
             taus = pickle.load(handle)
         for angle in data_dict:
             visit_num = 0
