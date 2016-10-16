@@ -422,7 +422,7 @@ def repack_chunk(paths, start, stop):
     path, but containing only the data between the specified start and stop indicies.
     '''
     start_path = paths[0]
-    if len(paths == 1):
+    if len(paths) == 1:
         end_path = start_path
     else:
         end_path = paths[1]
