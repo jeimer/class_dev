@@ -8,6 +8,7 @@ from datetime import datetime
 
 from moby2.util.mce import MCEButterworth, MCERunfile
 from moby2.instruments.class_telescope.products import get_tod
+from moby2.instruments.class_telescope import calibrate
 from moby2.tod import cuts
 import moby2
 from classtools.users.lpp.dpkg_util import DpkgSpan, DpkgLoc
