@@ -570,11 +570,11 @@ def pre_filter_sparse_grid_dict(data_dict, tau_path = None):
         for angle in data_dict:
             visit_num = 0
             for visit in data_dict[angle]:
-                vist.cuts = cuts.get_constant_det_cuts(visit)
+                visit.cuts = cuts.get_constant_det_cuts(visit)
                 moby2.tod.filter.prefilter_tod(visit, time_constants = taus[angle][visit_num], detrend = True)
                 visit_num += 1
                 for det in range(len(visit.data)):
-                    visit_data[det] = visit.data[det] - visit.data[det].mean()
+                    visit.data[det] = visit.data[det] - visit.data[det].mean()
 
         for key in data_dict:
             for tod in data_dict[key]:
