@@ -481,7 +481,7 @@ def load_sparse_grid_csv(year, month, day, path):
     ct_paris: (list) list of pairs of starting and stopping times of a single angle measurment
     angles: (list) list containing the angle of the sparse grid for the respective measurment.
     '''
-    f = open(time_edge_file, 'rU')
+    f = open(path, 'rU')
     csv_f = csv.reader(f)
     csv_rows = [row for row in csv_f]
     csv_rows = csv_rows[2:]
