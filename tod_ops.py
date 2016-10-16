@@ -516,6 +516,7 @@ def make_sparse_grid_dict2(dir_paths, ang_path):
     was at the respective angle.
     '''
     date_string = dir_paths[0].split('/')[4].split('-') #assumes dir_paths are all on the same day
+    date_string = [int(item) for item in date_string]
     ct_pairs, angles = load_sparse_grid_csv(date_string[0], date_string[1], date_string[2], ang_path)
     cal_angles = wire_grid_cal_angle(angles)
     m_dict = {key:[] for key in np.unique(cal_angles)}
