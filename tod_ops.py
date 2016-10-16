@@ -569,7 +569,7 @@ def pre_filter_sparse_grid_dict(data_dict, tau_path = None):
             taus = pickle.load(handle)
         for angle in data_dict:
             visit_num = 0
-            for visit in m_dict[angle]:
+            for visit in data_dict[angle]:
                 vist.cuts = cuts.get_constant_det_cuts(visit)
                 moby2.tod.filter.prefilter_tod(visit, time_constants = taus[angle][visit_num], detrend = True)
                 visit_num += 1
