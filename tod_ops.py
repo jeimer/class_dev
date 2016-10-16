@@ -1,11 +1,16 @@
 import numpy as np
+import pickle 
 from scipy import optimize
 from scipy.signal import butter, lfilter
+from datetime import datetime
+
+
 from moby2.util.mce import MCEButterworth, MCERunfile
 from moby2.instruments.class_telescope.products import get_tod
-from classtools.users.lpp.dpkg_util import DpkgSpan, DpkgLoc
 from moby2.tod import cuts
 import moby2
+from classtools.users.lpp.dpkg_util import DpkgSpan, DpkgLoc
+
 
 
 def data_valid_edges(tod):
@@ -424,9 +429,9 @@ def repack_chunk(path, start, stop):
     tod.data = np.require(tod.data, requirements = ['C', 'A'])
     return tod
 
-
-def make_calibration_grid_dic(paths, angles, min_chunk_size = 1000):
+def make_sparse_grid_dict1(paths, angles, min_chunk_size = 1000):
     '''
+    This function is designed to work with the sparse grid measurment performed 2016-06-29
     Creates a dictionary holding moby2 tods with calibration grid angle as keys.
     Parameters:
     paths: (list) list of full paths to dir files holding the calibration data run. The
@@ -457,6 +462,38 @@ def make_calibration_grid_dic(paths, angles, min_chunk_size = 1000):
                 angle_num += 1
     return chunks
 
+def load_sparse_grid_csv(year, month, day, path):
+    '''
+    Loads the start and stop times from a sparse grid measurment as recoreded in the CSV path.
+    Returns an array of pairs of the c_time values of the respective start and stop time.
+    Parameters:
+    year: (int) year of the measurement
+    month: (int) month of the measurment
+    day: (int) day of the measurment
+    path: (string) full path to the file holding the csv values of the start and stop times
+    of the sparse grid measurment.
+    '''
+    f = open(time_edge_file, 'rU')
+    csv_f = csv.reader(f)
+    csv_rows = [row for row in csv_f]
+    csv_rows = csv_rows[2:]
+    csv_rows = [row[0:2] for row in csv_rows]
+    utc_pairs = []
+    for row in csv_rows:
+            start = [int(item) for item in row[0].split(':')]
+            stop = [int(item) for item in row[1].split(':')]
+            utc_pairs += [[datetime(year, month, day, start[0], start[1], start[2]),
+                                     datetime(year, month, day, stop[0], stop[1], stop[2])]]
+    ct_pairs = [ ]
+    for pair in utc_pairs:
+        ct_pairs += [[int((pair[0] - datetime(1970, 1, 1, 0, 0, 0, 0)).total_seconds()),
+                       int((pair[1] - datetime(1970, 1, 1, 0, 0, 0, 0)).total_seconds())]]
+    return ct_pairs
+
+
+def make_sparse_grid_dict2(path, angles):
+
+
 def make_tau_dic(cal_grid_dic):
     '''
     uses find_tau2 to find the best fit time detector time constant to minimize tod hysteresis. For
@@ -476,3 +513,9 @@ def make_tau_dic(cal_grid_dic):
             taus[key] += [find_tau2(visit)]
             samp_num += 1
     return taus
+
+def pre_filter_sparse_grid_dict(data_dict, tua_path):
+    #load detector time constants
+    with open(tau_file, 'rb') as handle:
+        taus = pickle.load(handle)
+    
