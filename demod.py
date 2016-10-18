@@ -50,7 +50,7 @@ class Demod():
 
     def vpm_trans(self, wavelens, det_num, i_in, q_in, u_in, v_in):
         return self._vpm(self._alpha[det_num], self._phi[det_num], self._theta[det_num],
-                         self._tod.vpm / 1e3, dists, wavelens, self._weights, i_in, q_in, u_in, v_in)
+                         self._tod.vpm / 1e3, wavelens, self._weights, i_in, q_in, u_in, v_in)
 
     def u_prod(self, wavelens, det_num):
         trans = self.vpm_trans(wavelens, det_num, 1, 0, 1, 0)
