@@ -27,7 +27,7 @@ class Demod():
             #self._theta, self._phi = vpm_lib.az_el_to_vpm_angs(el_offs, az_offs)
             self._theta = np.ones(len(el_offs)) * 23 * np.pi/180
             self._phi = np.ones(len(el_offs)) * np.pi/4
-            self._alpha = tod.info.array_data['rot']
+            self._alpha = tod.info.array_data['rot'] * np.pi/180
         else:
             self._theta, self._phi, self._alpha = angles
 
