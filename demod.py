@@ -43,19 +43,19 @@ class Demod():
             tod.data[det_num] = signal.lfilter(b, a, self.u_prod(dists, wavelens, det_num))
         return
 
-    def vpm_trans(self, dists, wavelens, det_num, i_in, q_in, u_in, v_in):
+    def vpm_trans(self, wavelens, det_num, i_in, q_in, u_in, v_in):
         return self._vpm(self._alpha[det_num], self._phi[det_num], self._theta[det_num],
-                         dists, wavelens, self._weights, i_in, q_in, u_in, v_in)
+                         self._tod.vpm / 1e3, dists, wavelens, self._weights, i_in, q_in, u_in, v_in)
 
-    def u_prod(self, dists, wavelens, det_num):
-        trans = self.vpm_trans(dists, wavelens, det_num, 1, 0, 1, 0)
+    def u_prod(self, wavelens, det_num):
+        trans = self..vpm_trans(wavelens, det_num, 1, 0, 1, 0)
         return 2 * self._tod.data[det_num] * trans
 
-    def v_prod(self, dists, wavelens, det_num):
-        trans = self.vpm_trans(dists, wavelens, det_num, 1, 0, 0, 1)
+    def v_prod(self, wavelens, det_num):
+        trans = self.vpm_trans(wavelens, det_num, 1, 0, 0, 1)
         return 2 * self._tod.data[det_num] * trans
 
-    def q_prod(self, dists, wavelens, det_num):
-        trans = self.vpm_trans(dists, wavelens, det_num, 1, 1, 0, 0)
+    def q_prod(self, wavelens, det_num):
+        trans = self.vpm_trans(wavelens, det_num, 1, 1, 0, 0)
         return 2 * self._tod.data[det_num] * trans
 
