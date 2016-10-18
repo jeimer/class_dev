@@ -539,7 +539,7 @@ def make_sparse_grid_dict2(dir_paths, ang_path):
             stop_index = np.argwhere(f_times < stop).max()
             stop_path = dir_paths[path_num]
             m_dict[cal_angles[ang_num]] += [repack_chunk([start_path, stop_path], start_index, stop_index)]
-    return m_dict
+    return m_dict, cal_angles
 
 def make_tau_dic(cal_grid_dic):
     '''
@@ -581,3 +581,4 @@ def pre_filter_sparse_grid_dict(data_dict, tau_path = None):
             for tod in data_dict[key]:
                 cal = calibrate.Calib(tod)
                 cal.calib_dP()
+    return
