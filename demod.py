@@ -8,7 +8,7 @@ import vpm_lib
 
 class Demod():
 
-    def __init__(self, tod, vpm):
+    def __init__(self, tod, vpm, angles = None):
         self._tod = tod
         self._vpm = vpm
 
@@ -18,9 +18,15 @@ class Demod():
         self._freq_hi = 42e9
         self._sampling_freq = 25e6/100./11./113.
 
-        self._theta = 0
-        self._phi = 0
-        self._alpha = 0
+
+        if angles == None:
+            el_offs = tod.info.array_data['el_off']
+            az_offs = tod.info.array_data['az_off']
+
+            self._theta, self._phi = vpm_lib.az_el_to_vpm_angles(el_offs, az_offs)
+            self._alpha = tod.info.array_data['rot']
+        else:
+            self._theta, self._phi, self._alpha = angles
 
         self._calibrated = False
 
@@ -57,4 +63,8 @@ class Demod():
     def q_prod(self, wavelens, det_num):
         trans = self.vpm_trans(wavelens, det_num, 1, 1, 0, 0)
         return 2 * self._tod.data[det_num] * trans
+
+    def calibrate_vpm():
+        return
+
 
