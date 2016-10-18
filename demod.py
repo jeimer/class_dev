@@ -18,6 +18,8 @@ class Demod():
         self._freq_hi = 42e9
         self._sampling_freq = 25e6/100./11./113.
 
+        self._wavelens = si_constants.SPEED_C/ np.linspace(self._freq_low, self._freq_hi, self._num_waves)
+
 
         if angles == None:
             el_offs = tod.info.array_data['el_off']
@@ -33,39 +35,46 @@ class Demod():
 
         self._calibrated = False
 
-    def demodulate_ts(self, good_det_indx,  cutoff = 0.5, order = 3):
-        wavelens = si_constants.SPEED_C/ np.linspace(self._freq_low, self._freq_hi, self._num_waves)
-        nyq = 0.5 * self._sampling_freq
-        low = cutoff/ nyq
-        b, a = signal.butter(order, low, btype = 'lowpass')
-
-        el_offs = tod.info.array_data['el_off']
-        az_offs = tod.info.array_data['az_off']
-        alpha = tod.info.array_data['rot']
-
-        if not self._calibrated:
-            self.calibrate_vpm()
-            self._calibrated = True
-
+    def demod_u(self, good_det_indx,  cutoff = 0.5, order = 3):
+        b, a = self.lp_butter(cutoff, order)
         for det_num in good_det_indx:
-            tod.data[det_num] = signal.lfilter(b, a, self.u_prod(dists, wavelens, det_num))
+            tod.data[det_num] = signal.lfilter(b, a, self.u_prod(self._tod.vpm, self._wavelens, det_num))
         return
 
-    def vpm_trans(self, wavelens, det_num, i_in, q_in, u_in, v_in):
+    def demod(self, good_det_indx, cutoff = 0.5, order =3):
+        b, a =  self.lp_butter(cutter, order)
+        q = []
+        u = []
+        v = []
+        for det_num in good_det_indx:
+            q += [signal.lfilter(b, a, self.q_prod(self._tod.vpm, self._wavelens, det_num))]
+            u += [signal.lfilter(b, a, self.u_prod(self._tod.vpm, self._wavelens, det_num))]
+            v += [signal.lfilter(b, a, self.v_prod(self._tod.vpm, self._wavelens, det_num))]
+        return [q,u,v]
+
+
+    def lp_butter(self, cutoff, order):
+        nyq = 0.5 * self._sampling_freq
+        low = cutoff / nyq
+        b, a = signal.butter(order, low, btype = 'lowpass')
+        return b, a
+
+    def vpm_trans(self, det_num, i_in, q_in, u_in, v_in):
+        dists = self._tod.vpm / 1e3 # because VPM object expects units in [m]
         trans = self._vpm.det_vpm(self._alpha[det_num], self._phi[det_num], self._theta[det_num],
-                                  self._tod.vpm / 1e3, wavelens, self._weights, i_in, q_in, u_in, v_in)
+                                  dists, self._wavelens, self._weights, i_in, q_in, u_in, v_in)
         return trans - trans.mean()
 
-    def u_prod(self, wavelens, det_num):
-        trans = self.vpm_trans(wavelens, det_num, 1, 0, 1, 0)
+    def u_prod(self, det_num):
+        trans = self.vpm_trans(self._wavelens, det_num, 1, 0, 1, 0)
         return 2 * self._tod.data[det_num] * trans
 
-    def v_prod(self, wavelens, det_num):
-        trans = self.vpm_trans(wavelens, det_num, 1, 0, 0, 1)
+    def v_prod(self, det_num):
+        trans = self.vpm_trans(self._wavelens, det_num, 1, 0, 0, 1)
         return 2 * self._tod.data[det_num] * trans
 
-    def q_prod(self, wavelens, det_num):
-        trans = self.vpm_trans(wavelens, det_num, 1, 1, 0, 0)
+    def q_prod(self, det_num):
+        trans = self.vpm_trans(self._wavelens, det_num, 1, 1, 0, 0)
         return 2 * self._tod.data[det_num] * trans
 
     def calibrate_vpm():
