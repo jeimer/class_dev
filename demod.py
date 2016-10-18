@@ -23,7 +23,7 @@ class Demod():
             el_offs = tod.info.array_data['el_off']
             az_offs = tod.info.array_data['az_off']
 
-            self._theta, self._phi = vpm_lib.az_el_to_vpm_angles(el_offs, az_offs)
+            self._theta, self._phi = vpm_lib.az_el_to_vpm_angs(el_offs, az_offs)
             self._alpha = tod.info.array_data['rot']
         else:
             self._theta, self._phi, self._alpha = angles
