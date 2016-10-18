@@ -502,7 +502,7 @@ def load_sparse_grid_csv(year, month, day, path):
     return ct_pairs, np.array(angles)
 
 
-def make_sparse_grid_dict2(dir_paths, ang_path):
+def make_sparse_grid_dict2(dir_paths, ang_path, skip_meas = None):
     '''
     This function is designed to work with the sparse grid measurment performed in Sept 2016 or
     afterward. Creates a dictionary holding lists of moby2 tods with calibration grid angle as keys.
@@ -582,3 +582,9 @@ def pre_filter_sparse_grid_dict(data_dict, tau_path = None):
                 cal = calibrate.Calib(tod)
                 cal.calib_dP()
     return
+
+def remove_sparse_grid_outliers(m_dict):
+    #bin data
+    #remove all points more than four standard deviations from the median.
+    return
+
