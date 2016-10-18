@@ -29,7 +29,6 @@ class Demod():
         nyq = 0.5 * self._sampling_freq
         low = cutoff/ nyq
         b, a = signal.butter(order, low, btype = 'lowpass')
-        dists = tod.vpm / 1e3
 
         el_offs = tod.info.array_data['el_off']
         az_offs = tod.info.array_data['az_off']
@@ -48,7 +47,7 @@ class Demod():
                          self._tod.vpm / 1e3, dists, wavelens, self._weights, i_in, q_in, u_in, v_in)
 
     def u_prod(self, wavelens, det_num):
-        trans = self..vpm_trans(wavelens, det_num, 1, 0, 1, 0)
+        trans = self.vpm_trans(wavelens, det_num, 1, 0, 1, 0)
         return 2 * self._tod.data[det_num] * trans
 
     def v_prod(self, wavelens, det_num):
