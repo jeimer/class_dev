@@ -66,7 +66,7 @@ class Demod():
         return trans - trans.mean()
 
     def u_prod(self, det_num):
-        trans = self.vpm_trans(self._wavelens, det_num, 1, 0, 1, 0)
+        trans = self.vpm_trans(det__num, 1, 0, 1, 0)
         return 2 * self._tod.data[det_num] * trans
 
     def v_prod(self, det_num):
