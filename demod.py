@@ -52,9 +52,6 @@ class Demod():
         return
 
     def vpm_trans(self, wavelens, det_num, i_in, q_in, u_in, v_in):
-        print('alpha', self._alpha[det_num])
-        print('phi', self._phi[det_num])
-        print('theta', self._theta[det_num])
         return self._vpm.det_vpm(self._alpha[det_num], self._phi[det_num], self._theta[det_num],
                                  self._tod.vpm / 1e3, wavelens, self._weights, i_in, q_in, u_in, v_in)
 
