@@ -70,11 +70,11 @@ class Demod():
         return 2 * self._tod.data[det_num] * trans
 
     def v_prod(self, det_num):
-        trans = self.vpm_trans(self._wavelens, det_num, 1, 0, 0, 1)
+        trans = self.vpm_trans(det_num, 1, 0, 0, 1)
         return 2 * self._tod.data[det_num] * trans
 
     def q_prod(self, det_num):
-        trans = self.vpm_trans(self._wavelens, det_num, 1, 1, 0, 0)
+        trans = self.vpm_trans(det_num, 1, 1, 0, 0)
         return 2 * self._tod.data[det_num] * trans
 
     def calibrate_vpm():
