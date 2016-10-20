@@ -50,38 +50,6 @@ def az_el_to_vpm_angs(az,el):
 
     return (theta,phi)
 
-
-
-def vpm_demod(tod, good_dets,  enc_offset = 0., phase_shift = 0, num_waves = 200, weights = np.ones(200),
-              freq_low = 33e9, freq_hi = 43e9, sampling_freq = 25e6/100./11./113., butter_order = 2,
-              cutoff = 2):
-
-    wavelengths = si_constants.SPEED_C/ np.linspace(freq_low, freq_hi, num_waves)
-
-    nyq = 0.5 * sampling_freq
-    low = cutoff / nyq
-    b, a = signal.butter(butter_order, low, btype = 'lowpass')
-    vpm = VPM()
-    #vpm.set_dist_offset(enc_offset)
-
-    dists = tod.vpm / 1e3 + enc_offset
-    #dists = np.array([dists[el + phase_shift] for el in dists])
-    el_offs = tod.info.array_data['el_off']
-    az_offs = tod.info.array_data['az_off']
-    alpha = tod.info.array_data['rot']
-
-    (theta, phi) = az_el_to_vpm_angs(el_offs, az_offs)
-    for det in good_dets:
-        u_transfer = vpm.det_vpm(alpha[det], phi[det], theta[det], dists,
-                                 wavelengths, weights, 1, 0, 1, 0)
-        mult_data = 2 * tod.data[det] * u_transfer
-        tod.data[det] = signal.lfilter(b, a, mult_data)
-    return
-
-#def vpm_encoder_calibration_metric(off_set):
-
-
-
 class VPM(object):
     ''' The VPM object contains the gemetric state of a VPM system and includes
     functionality to calculate the transfer function of the VPM-detector system.
@@ -234,7 +202,37 @@ class VPM(object):
         return gam
 
     def det_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs, ideal = True):
-        ''' follows the spirit and coordinate conventions of Chuss et al 2012.
+        ''' follows the spirit and coordinate conventions of Chuss et al 2012. DC terms are droppded.
+        alpha (float):[radians] angle of the detectors w.r.t projected grid wires
+        phi (float): [radians] angle of grid wires w.r.t. plane of incidence [radians]
+        theta (float): [radians] angle of incidence [radians]
+        dist (array like): grid mirror separation [m]
+        wavelengths (array like): [m]
+        weights (array like): weight of respective frequency relative to unity
+        '''
+        self._ideal = ideal
+
+        delays = 2.0 * (dists + self._dist_offset) * np.cos(theta)
+        wave_nums = 2.0 * np.pi/ wavelengths
+
+        # the idea of this method is to take the geometry of the VPM detecotr system and input IQUV
+        # and return the band averaged response measured by a detector. 
+
+        det = np.zeros(len(delays))
+        if self._ideal == True:
+            ang_dif_factor = 1./2. * np.sin(2. * (alpha - phi))
+            for delay_count in range(len(delays)):
+                mq = Qs * (-1. * ang_dif_factor * np.cos(delays[delay_count] * wave_nums) * np.sin(2 * phi))
+                mu = -1.*Us/4. * (np.sin(2 * (alpha - 2 * phi)) + np.sin(2 * alpha)) * np.cos( delays[delay_count] * wave_nums)
+                mv = Vs * ang_dif_factor * np.sin(delays[delay_count] * wave_nums)
+                det_val = (mq + mu + mv) * weights
+                det[delay_count] = np.sum(det_val)/len(wave_nums)
+        else:
+            det= -1* np.ones(len(dists))
+        return det
+
+    def det_vpm_dc(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs, ideal = True):
+        ''' follows the spirit and coordinate conventions of Chuss et al 2012. includes DC terms
         alpha (float):[radians] angle of the detectors w.r.t projected grid wires
         phi (float): [radians] angle of grid wires w.r.t. plane of incidence [radians]
         theta (float): [radians] angle of incidence [radians]
@@ -254,8 +252,8 @@ class VPM(object):
         det = np.zeros(len(delays))
         if self._ideal == True:
             mi = 1./2 * Is
-            mq1 = Qs * (-1./4 * np.cos(2 * alpha) - 1./4 * np.cos(2*(alpha - 2*phi)))
-            ang_dif_factor = 1./2 * np.sin(2 * (alpha - phi))
+            mq1 = Qs * (-1./4. * np.cos(2. * alpha) - 1./4 * np.cos(2.*(alpha - 2.*phi)))
+            ang_dif_factor = 1./2. * np.sin(2. * (alpha - phi))
             for delay_count in range(len(delays)):
                 mq2 = Qs * (-1. * ang_dif_factor * np.cos(delays[delay_count] * wave_nums) * np.sin(2 * phi))
                 mu1 = Us * (-1./2 * np.sin(2*(alpha - 2*phi)) * np.cos(delays[delay_count] * wave_nums/2.)**2 +
@@ -267,7 +265,7 @@ class VPM(object):
             det= -1* np.ones(len(dists))
         return det
 
-    def pixel_cal_error(self, p, vpm_dist, det_data):
+    def pixel_cal_error(self, p, vpm_dist, det_data, det_data_error):
         '''
         returns the error between the current VPM model and the data
         Parameters:
@@ -277,8 +275,8 @@ class VPM(object):
         grid orientation.
         det_data: (list) Each member of the list is an array of calibrated mean-subtracted decector data for a single
         calibration grid orientation.
+        det_data_error: (array) array of uncertaininty in the detector measurments. 
         '''
-
         alpha = np.pi/4.
         phi = np.pi/2.
         enc_offset = p[0]
@@ -293,20 +291,10 @@ class VPM(object):
         self.set_dist_offset(enc_offset)
 
         num_samps = len(det_data)
-        error_val = 0.
+        deviation_list = []
         for samp_num in range(num_samps):
-#            print('alpha is ', alpha)
-#            print('phi is ', phi)
-#            print('theta is', theta)
-#            print('dist is ', vpm_dist[samp_num])
-#            print('wavelengths are ', wavelengths)
-#            print('weights are ', weights)
-#            print('amp is ', p[2 * samp_num + 3])
             u_trans = self.det_vpm(alpha, phi, theta, vpm_dist[samp_num], wavelengths, weights,
                                    p[2 * samp_num + 3], 0., p[2 * samp_num + 3],0.)
-#            print('u_trans is', str(u_trans))
             u = (u_trans + p[2 * samp_num + 2])
-#            print('u is', str(u))
-
-            error_val += sum((u - det_data[samp_num])**2)
-        return error_val
+            deviation_list += (u - det_data[samp_num])/det_data_error
+        return deviation_list
