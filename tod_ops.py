@@ -603,7 +603,7 @@ def remove_sparse_grid_outliers(m_dict):
 
 def data_fix_jumps(data, lim, window):
     diff = np.diff(data)
-    jumps = np.where(np.abs(diff) > lim)
+    jumps = np.where(np.abs(diff) > lim)[0]
     #if adjacent points meeth threshold, keep the first one.
     if len(jumps) == 0:
         return data
