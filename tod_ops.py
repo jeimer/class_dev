@@ -602,11 +602,9 @@ def remove_sparse_grid_outliers(m_dict):
 
 
 def fix_jumps(data, lim):
-    new  = data[:]
+    new  = np.copy(data)
     diff = np.diff(data)
     index_jump = np.where(np.abs(diff) > lim)[0]
     for i in index_jump:
         new[i + 1:] = new[i+1:] - diff[i]
     return new
-
-
