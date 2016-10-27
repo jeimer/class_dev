@@ -611,6 +611,7 @@ def data_fix_jumps(data, lim, window):
         adj = jumps[1:] - jumps[:-1]
         starts = np.append(np.array([0]), np.where(adj>1)[0] + 1)
         pre_start = 0
+        print('jumps are ', jumps)
         print('starts are ', starts)
         for start in starts:
             print('this start is, ', start)
