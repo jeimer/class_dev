@@ -541,6 +541,15 @@ def make_sparse_grid_dict2(dir_paths, ang_path, skip_meas = None):
             m_dict[cal_angles[ang_num]] += [repack_chunk([start_path, stop_path], start_index, stop_index)]
     return m_dict, cal_angles
 
+def moving_avg(a, window = 11):
+    if window%2 != 1:
+        print('window must be odd')
+        return
+    res = np.zeros(len(a))
+    ret = np.cumsum(a, dtype = float)
+    res[(window-1)/2:-1*(window-1)/2] = ret[window:] - ret[:-window]
+    return res / window
+
 def make_tau_dic(cal_grid_dic):
     '''
     uses find_tau2 to find the best fit time detector time constant to minimize tod hysteresis. For
