@@ -547,7 +547,7 @@ def moving_avg(a, window = 11):
         return
     res = np.zeros(len(a)+ window)
     ret = np.cumsum(a, dtype = float)
-    res[(window-1)/2:-1*(window-1)/2-1] = ret[window:] - ret[:-window]
+    res[(window-1)/2 + 1:-1*(window-1)/2-1] = ret[window:] - ret[:-window]
     return res / window
 
 def make_tau_dic(cal_grid_dic):
