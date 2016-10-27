@@ -601,29 +601,11 @@ def remove_sparse_grid_outliers(m_dict):
 
 
 
-def data_fix_jumps(data, lim, window):
+def fix_jumps(data, lim):
     diff = np.diff(data)
-    jumps = np.where(np.abs(diff) > lim)[0]
-    #if adjacent points meeth threshold, keep the first one.
-    if len(jumps) == 0:
-        print('no jumps')
-        return data
-    else:
-        adj = jumps[1:] - jumps[:-1]
-        starts = np.append(np.array([0]), np.where(adj>1)[0] + 1)
-        pre_start = 0
-        print('jumps are ', jumps)
-        print('starts are ', starts)
-        for start in starts:
-            print('this start is, ', start)
-            part = data[pre_start: jumps[start] - window//2]
-            t = np.arange(len(part))
-            print('part is', part)
-            print('t is', t)
-            z = np.polyfit(t, part, 1)
-            p = np.poly1d(z)
-            data[pre_start: jumps[start] - window/2] = part - p(t)
-            pre_start = jumps[start] + window//2
+    index_jump = np.where(np.abs(diff) > lim)[0]
+    for i in index_jump:
+        data[i + 1:] = data[i+1:] - diff[i]
     return data
 
 
