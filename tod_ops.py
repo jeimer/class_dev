@@ -622,6 +622,6 @@ def data_fix_jumps(data, lim, window):
             p = np.poly1d(z)
             data[pre_start: jumps[start] - window/2] = part - p(t)
             pre_start = jumps[start] + window//2
-    return
+    return data
 
 
