@@ -542,12 +542,12 @@ def make_sparse_grid_dict2(dir_paths, ang_path, skip_meas = None):
     return m_dict, cal_angles
 
 def moving_avg(a, window = 11):
-    if window%2 != 1:
+    if window % 2 == 0:
         print('window must be odd')
         return
-    res = np.zeros(len(a))
+    res = np.zeros(len(a)+ window)
     ret = np.cumsum(a, dtype = float)
-    res[(window-1)/2:-1*(window-1)/2] = ret[window:] - ret[:-window]
+    res[(window-1)/2:-1*(window-1)/2-1] = ret[window:] - ret[:-window]
     return res / window
 
 def make_tau_dic(cal_grid_dic):
