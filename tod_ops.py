@@ -606,6 +606,7 @@ def data_fix_jumps(data, lim, window):
     jumps = np.where(np.abs(diff) > lim)[0]
     #if adjacent points meeth threshold, keep the first one.
     if len(jumps) == 0:
+        print('no jumps')
         return data
     else:
         adj = jumps[1:] - jumps[:-1]
