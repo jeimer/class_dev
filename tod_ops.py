@@ -614,6 +614,8 @@ def data_fix_jumps(data, lim, window):
         for start in starts:
             part = data[pre_start: start - window//2]
             t = np.arange(len(part))
+            print(part)
+            print(t)
             z = np.polyfit(t, part, 1)
             p = np.poly1d(z)
             data[pre_start: start - window/2] = part - p(t)
