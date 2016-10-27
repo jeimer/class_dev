@@ -546,7 +546,7 @@ def moving_avg(a, window = 11):
         print('window must be odd')
         return
     pad = np.zeros( (window - 1)/2)
-    res = np.cumsum(a, dtype = float)
+    res = np.cumsum(a)
     res = res[window:] - res[:-1*window]
     res = res / window
     res = np.concatenate((pad, res, pad))
