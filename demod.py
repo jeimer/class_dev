@@ -6,9 +6,9 @@ from scipy import signal
 import vpm_lib
 
 
-class Demod():
+class Modulator():
     '''
-    The Demod object is an interface to the VPM object for producing product time streams and demodulated
+    The Modulator object is an interface to the VPM object for producing product time streams and demodulated
     time streams.
     '''
 
@@ -44,6 +44,18 @@ class Demod():
             self._theta, self._phi, self._alpha = angles
 
         self._calibrated = False
+
+    def windowed_sinc(self, width, cutoff, num_samps):
+        '''
+        width: (float) width of transition [Hz]
+        cutoff: (float) frequency of transition [Hz]
+        '''
+        M = 4. / width
+        fc = cutoff/self._sampling_freq
+        samps = np.arange(num_samps)
+        h = np.sin(2 * np.pi* fc * (samps - M/2))/(samps - M/2)*(0.42 - 0.5 * np.cos(2 * np.pi * samps/ M) + 0.08 * np.cos(4 * np.pi * samps/ M))
+        tot = h.sum()
+        return  h / tot # normalize filter
 
     def demod_u(self, good_det_indx,  cutoff = 0.5, order = 3):
         '''
