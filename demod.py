@@ -51,7 +51,7 @@ class Modulator():
         cutoff: (float) frequency of transition [Hz]
         '''
         M = 4. / width
-        M = int()np.ceil( M / 2) * 2)
+        M = int(np.ceil( M / 2) * 2)
         fc = cutoff/self._sampling_freq
         samps = np.arange(M)
         h = np.sin(2 * np.pi* fc * (samps - M/2))/(samps - M/2)*(0.42 - 0.5 * np.cos(2 * np.pi * samps/ M) + 0.08 * np.cos(4 * np.pi * samps/ M))
