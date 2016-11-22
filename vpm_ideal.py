@@ -94,9 +94,6 @@ class IdealVPM(object):
         wave_nums = wave_nums[np.newaxis,:]
         config = delays * wave_nums
 
-        print('config shape is ', np.shape(config))
-
-
         # the idea of this method is to take the geometry of the VPM detecotr system and input IQUV
         # and return the band averaged response measured by a detector. 
 
@@ -108,13 +105,14 @@ class IdealVPM(object):
                            Vs * ang_dif_factor])
 
 
-        c_config = np.cos(config)
-        s_config = np.sin(config)
+        #c_config = np.cos(config)
+        #s_config = np.sin(config)
 
-        print('c_config shape is ', np.shape(c_config))
-        print(' num_waves shape is ', np.shape(num_waves))
-        c_config = np.sum(c_config, axis = 1)/num_waves
-        s_config = np.sum(s_config, axis = 1)/num_waves
+        #c_config = np.sum(c_config, axis = 1)/num_waves
+        #s_config = np.sum(s_config, axis = 1)/num_waves
+
+        c_config = np.sum(np.cos(config), axis = 1)/ num_waves
+        s_config = np.sum(np.sin(config), axis = 1)/ num_waves
 
         mq = c_config * stokes[0]
         mu = c_config * stokes[1]
