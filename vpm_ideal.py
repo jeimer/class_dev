@@ -105,17 +105,15 @@ class IdealVPM(object):
                            Vs * ang_dif_factor])
 
 
-        #c_config = np.cos(config)
-        #s_config = np.sin(config)
-
-        #c_config = np.sum(c_config, axis = 1)/num_waves
-        #s_config = np.sum(s_config, axis = 1)/num_waves
-
         c_config = np.sum(np.cos(config), axis = 1)/ num_waves
-        s_config = np.sum(np.sin(config), axis = 1)/ num_waves
 
-        mq = c_config * stokes[0]
-        mu = c_config * stokes[1]
-        mv = s_config * stokes[2]
+        m = 0
+        if Qs != 0:
+            m += c_config * stokes[0]
+        if Us != 0:
+            m += c_config * stokes[1]
+        if Vs != 0:
+            s_config = np.sum(np.sin(config), axis = 1)/ num_waves
+            m += s_config * stokes[2]
 
-        return mq + mu + mv
+        return m
