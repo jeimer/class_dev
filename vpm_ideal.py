@@ -50,7 +50,47 @@ class IdealVPM(object):
         '''return the distance between the VPM grid wires and the mirror'''
         return self._dist
 
-    def det_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs):
+
+
+    def det_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs, ideal = True):
+        ''' follows the spirit and coordinate conventions of Chuss et al 2012. Non-modulated terms
+        have been dropped.
+
+        alpha (float):[radians] angle of the detectors w.r.t projected grid wires
+        phi (float): [radians] angle of grid wires w.r.t. plane of incidence
+        theta (float): [radians] angle of incidence
+        dist (array like): [m] grid mirror separation. Note that tod.vpm is in mm. You are responsible
+        for unit conversion.
+        wavelengths (array like): [m]
+        weights (array like): weight of respective frequency relative to unity
+        '''
+        num_waves = len(wavelengths)
+
+        delays = 2.0 * (dists + self._dist_offset) * np.cos(theta)
+        wave_nums = 2.0 * np.pi/ wavelengths
+        delays = delays[:,np.newaxis]
+        wave_nums = wave_nums[np.newaxis,:]
+        config = delays * wave_nums
+
+        # the idea of this method is to take the geometry of the VPM detecotr system and input IQUV
+        # and return the band averaged response measured by a detector. 
+
+        ang_dif_factor = 1./2. * np.sin(2. * (alpha - phi))
+
+        if Qs or Us != 0:
+            c_config = np.sum(np.cos(config), axis = 1)/ num_waves
+
+        m = 0
+        if Qs != 0: # Q modulation
+            m += c_config * -1. * Qs * ang_dif_factor * np.sin(2. * phi)
+        if Us != 0: # U modulation
+            m += c_config * -1./4. * Us * (np.sin(2. * (alpha - 2. * phi)) + np.sin(2. * alpha))
+        if Vs != 0:# V modulation
+            s_config = np.sum(np.sin(config), axis = 1)/ num_waves
+            m += s_config * Vs * ang_dif_factor
+        return m
+
+    def slow_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs):
         ''' follows the spirit and coordinate conventions of Chuss et al 2012. DC terms are droppded.
         alpha (float):[radians] angle of the detectors w.r.t projected grid wires
         phi (float): [radians] angle of grid wires w.r.t. plane of incidence [radians]
@@ -76,40 +116,3 @@ class IdealVPM(object):
             det_val = (mq + mu + mv) * weights
             det[delay_count] = np.sum(det_val)/len(wave_nums)
         return det
-
-    def vpm_mat(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs, ideal = True):
-        ''' follows the spirit and coordinate conventions of Chuss et al 2012. DC terms are droppded.
-        alpha (float):[radians] angle of the detectors w.r.t projected grid wires
-        phi (float): [radians] angle of grid wires w.r.t. plane of incidence [radians]
-        theta (float): [radians] angle of incidence [radians]
-        dist (array like): grid mirror separation [m]
-        wavelengths (array like): [m]
-        weights (array like): weight of respective frequency relative to unity
-        '''
-
-        delays = 2.0 * (dists[:,np.newaxis] + self._dist_offset) * np.cos(theta)
-        wave_nums = 2.0 * np.pi/ wavelengths[np.newaxis,:]
-        num_waves = len(wavelengths)
-        #delays = delays[:,np.newaxis]
-        #wave_nums = wave_nums[np.newaxis,:]
-        config = delays * wave_nums
-
-        # the idea of this method is to take the geometry of the VPM detecotr system and input IQUV
-        # and return the band averaged response measured by a detector. 
-
-        det = np.zeros(len(delays))
-        ang_dif_factor = 1./2. * np.sin(2. * (alpha - phi))
-
-        if Qs or Us != 0:
-            c_config = np.sum(np.cos(config), axis = 1)/ num_waves
-
-        m = 0
-        if Qs != 0:
-            m += c_config * -1 * Qs * ang_dif_factor * np.sin(2 * phi)
-        if Us != 0:
-            m += c_config * -1./4. * Us * (np.sin(2 * (alpha - 2 * phi)) + np.sin(2 * alpha))
-        if Vs != 0:
-            s_config = np.sum(np.sin(config), axis = 1)/ num_waves
-            m += s_config * Vs * ang_dif_factor
-
-        return m
