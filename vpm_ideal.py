@@ -87,11 +87,11 @@ class IdealVPM(object):
         weights (array like): weight of respective frequency relative to unity
         '''
 
-        delays = 2.0 * (dists + self._dist_offset) * np.cos(theta)
-        wave_nums = 2.0 * np.pi/ wavelengths
-        num_waves = len(wave_nums)
-        delays = delays[:,np.newaxis]
-        wave_nums = wave_nums[np.newaxis,:]
+        delays = 2.0 * (dists[:,np.newaxis] + self._dist_offset) * np.cos(theta)
+        wave_nums = 2.0 * np.pi/ wavelengths[np.newaxis,:]
+        num_waves = len(wavelengths)
+        #delays = delays[:,np.newaxis]
+        #wave_nums = wave_nums[np.newaxis,:]
         config = delays * wave_nums
 
         # the idea of this method is to take the geometry of the VPM detecotr system and input IQUV
