@@ -100,20 +100,16 @@ class IdealVPM(object):
         det = np.zeros(len(delays))
         ang_dif_factor = 1./2. * np.sin(2. * (alpha - phi))
 
-        stokes = np.array([-1 * Qs * ang_dif_factor * np.sin(2 * phi),
-                           -1./4. * Us * (np.sin(2 * (alpha - 2 * phi)) + np.sin(2 * alpha)),
-                           Vs * ang_dif_factor])
-
-
-        c_config = np.sum(np.cos(config), axis = 1)/ num_waves
+        if Qs or Us != 0:
+            c_config = np.sum(np.cos(config), axis = 1)/ num_waves
 
         m = 0
         if Qs != 0:
-            m += c_config * stokes[0]
+            m += c_config * -1 * Qs * ang_dif_factor * np.sin(2 * phi)
         if Us != 0:
-            m += c_config * stokes[1]
+            m += c_config * -1./4. * Us * (np.sin(2 * (alpha - 2 * phi)) + np.sin(2 * alpha))
         if Vs != 0:
             s_config = np.sum(np.sin(config), axis = 1)/ num_waves
-            m += s_config * stokes[2]
+            m += s_config * Vs * ang_dif_factor
 
         return m
