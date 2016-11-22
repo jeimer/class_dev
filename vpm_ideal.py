@@ -50,7 +50,7 @@ class IdealVPM(object):
         '''return the distance between the VPM grid wires and the mirror'''
         return self._dist
 
-    def det_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs, ideal = True):
+    def det_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs):
         ''' follows the spirit and coordinate conventions of Chuss et al 2012. DC terms are droppded.
         alpha (float):[radians] angle of the detectors w.r.t projected grid wires
         phi (float): [radians] angle of grid wires w.r.t. plane of incidence [radians]
@@ -109,8 +109,8 @@ class IdealVPM(object):
         c_config = np.cos(config)
         s_config = np.sin(config)
 
-        c_config = np.sum(c_config, axis = 1)/wave_nums
-        s_config = np.sum(s_config, axis = 1)/wave_nums
+        c_config = np.sum(c_config, axis = 1)/num_waves
+        s_config = np.sum(s_config, axis = 1)/num_waves
 
         mq = c_config * stokes[0]
         mu = c_config * stokes[1]
