@@ -67,20 +67,17 @@ class IdealVPM(object):
         config = delays * wave_nums
 
         ang_dif_factor = 1./2. * np.sin(2. * (alpha - phi))
-        cfg = np.sum(np.exp(1j * config), axis = 1)/ num_waves
-#        if Qs or Us != 0:
-            #c_config = np.sum(np.cos(config), axis = 1)/ num_waves
+
+        if Qs or Us != 0:
+            c_config = np.sum(np.cos(config), axis = 1)/ num_waves
         m = 0
         if Qs != 0: # Q modulation
-            #m += c_config * -1. * Qs * ang_dif_factor * np.sin(2. * phi)
-            m += np.real(cfg) * -1. * Qs * ang_dif_factor * np.sin(2. * phi)
+            m += c_config * -1. * Qs * ang_dif_factor * np.sin(2. * phi)
         if Us != 0: # U modulation
-            #m += c_config * -1./4. * Us * (np.sin(2. * (alpha - 2. * phi)) + np.sin(2. * alpha))
-            m += np.real(cfg) * -1./4. * Us * (np.sin(2. * (alpha - 2. * phi)) + np.sin(2. * alpha))
+            m += c_config * -1./4. * Us * (np.sin(2. * (alpha - 2. * phi)) + np.sin(2. * alpha))
         if Vs != 0:# V modulation
-            #s_config = np.sum(np.sin(config), axis = 1)/ num_waves
-            #m += s_config * Vs * ang_dif_factor
-            m += np.imag(cfg) * Vs * ang_dif_factor
+            s_config = np.sum(np.sin(config), axis = 1)/ num_waves
+            m += s_config * Vs * ang_dif_factor
         return m
 
     def slow_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs):
