@@ -25,28 +25,9 @@ class IdealVPM(object):
     '''
 
     def __init__(self, recv = 'q_band', fname = 'q_vpm.txt'):
+        return
 
-        #state parameter
-        self._dist = 0 #[m] distance between the wires and the mirror
-        self._dist_offset = 0 #[m] offset between wires-mirror distance calibration
-
-    def set_dist_offset(self, offset):
-        '''set the grid mirrorf separation offset [m]'''
-        self._dist_offset = offset
-
-    def get_dist_offset(self):
-        '''return the current grid mirror separation offset [m]'''
-        return self._dist_offset
-
-    def set_dist(self, dist):
-        '''set the grid mirror separtation distance [m]'''
-        self._dist = dist
-
-    def get_dist(self):
-        '''return the distance between the VPM grid wires and the mirror'''
-        return self._dist
-
-    def det_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs, ideal = True):
+    def det_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs):
         ''' follows the spirit and coordinate conventions of Chuss et al 2012. Non-modulated terms
         have been dropped.
 
@@ -60,7 +41,7 @@ class IdealVPM(object):
         '''
         num_waves = len(wavelengths)
 
-        delays = 2.0 * (dists + self._dist_offset) * np.cos(theta)
+        delays = 2.0 * dists * np.cos(theta)
         wave_nums = 2.0 * np.pi/ wavelengths
         delays = delays[:,np.newaxis]
         wave_nums = wave_nums[np.newaxis,:]
@@ -90,7 +71,7 @@ class IdealVPM(object):
         weights (array like): weight of respective frequency relative to unity
         '''
 
-        delays = 2.0 * (dists + self._dist_offset) * np.cos(theta)
+        delays = 2.0 * dists * np.cos(theta)
         wave_nums = 2.0 * np.pi/ wavelengths
 
         # the idea of this method is to take the geometry of the VPM detecotr system and input IQUV
