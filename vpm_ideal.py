@@ -30,10 +30,6 @@ class IdealVPM(object):
         self._dist = 0 #[m] distance between the wires and the mirror
         self._dist_offset = 0 #[m] offset between wires-mirror distance calibration
 
-
-        #user parameters
-        #self._weights =  # relative weight for each wavelength.
-
     def set_dist_offset(self, offset):
         '''set the grid mirrorf separation offset [m]'''
         self._dist_offset = offset
@@ -49,8 +45,6 @@ class IdealVPM(object):
     def get_dist(self):
         '''return the distance between the VPM grid wires and the mirror'''
         return self._dist
-
-
 
     def det_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs, ideal = True):
         ''' follows the spirit and coordinate conventions of Chuss et al 2012. Non-modulated terms
@@ -72,22 +66,21 @@ class IdealVPM(object):
         wave_nums = wave_nums[np.newaxis,:]
         config = delays * wave_nums
 
-        # the idea of this method is to take the geometry of the VPM detecotr system and input IQUV
-        # and return the band averaged response measured by a detector. 
-
         ang_dif_factor = 1./2. * np.sin(2. * (alpha - phi))
-
-        if Qs or Us != 0:
-            c_config = np.sum(np.cos(config), axis = 1)/ num_waves
-
+        cfg = np.sum(np.exp(1j * config), axis = 1)/ num_waves
+#        if Qs or Us != 0:
+            #c_config = np.sum(np.cos(config), axis = 1)/ num_waves
         m = 0
         if Qs != 0: # Q modulation
-            m += c_config * -1. * Qs * ang_dif_factor * np.sin(2. * phi)
+            #m += c_config * -1. * Qs * ang_dif_factor * np.sin(2. * phi)
+            m += np.real(cfg) * -1. * Qs * ang_dif_factor * np.sin(2. * phi)
         if Us != 0: # U modulation
-            m += c_config * -1./4. * Us * (np.sin(2. * (alpha - 2. * phi)) + np.sin(2. * alpha))
+            #m += c_config * -1./4. * Us * (np.sin(2. * (alpha - 2. * phi)) + np.sin(2. * alpha))
+            m += np.real(cfg) * -1./4. * Us * (np.sin(2. * (alpha - 2. * phi)) + np.sin(2. * alpha))
         if Vs != 0:# V modulation
-            s_config = np.sum(np.sin(config), axis = 1)/ num_waves
-            m += s_config * Vs * ang_dif_factor
+            #s_config = np.sum(np.sin(config), axis = 1)/ num_waves
+            #m += s_config * Vs * ang_dif_factor
+            m += np.imag(cfg) * Vs * ang_dif_factor
         return m
 
     def slow_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs):
