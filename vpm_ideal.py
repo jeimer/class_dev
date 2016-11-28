@@ -27,6 +27,14 @@ class IdealVPM(object):
     def __init__(self, recv = 'q_band', fname = 'q_vpm.txt'):
         return
 
+    def memoize(self, func):
+        memo = {}
+        def helper(key):
+            if key not in memo:
+                memo[key] = func(key)
+            return memo[key]
+        return helper
+
     def det_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs):
         ''' follows the spirit and coordinate conventions of Chuss et al 2012. Non-modulated terms
         have been dropped.
@@ -61,6 +69,7 @@ class IdealVPM(object):
             m += s_config * Vs * ang_dif_factor
         return m
 
+
     def slow_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs):
         ''' follows the spirit and coordinate conventions of Chuss et al 2012. DC terms are droppded.
         alpha (float):[radians] angle of the detectors w.r.t projected grid wires
@@ -71,6 +80,7 @@ class IdealVPM(object):
         weights (array like): weight of respective frequency relative to unity
         '''
 
+        memo = {}
         delays = 2.0 * dists * np.cos(theta)
         wave_nums = 2.0 * np.pi/ wavelengths
 
@@ -81,9 +91,11 @@ class IdealVPM(object):
 
         ang_dif_factor = 1./2. * np.sin(2. * (alpha - phi))
         for delay_count in range(len(delays)):
-            mq = Qs * (-1. * ang_dif_factor * np.cos(delays[delay_count] * wave_nums) * np.sin(2 * phi))
-            mu = -1.*Us/4. * (np.sin(2 * (alpha - 2 * phi)) + np.sin(2 * alpha)) * np.cos( delays[delay_count] * wave_nums)
-            mv = Vs * ang_dif_factor * np.sin(delays[delay_count] * wave_nums)
-            det_val = (mq + mu + mv) * weights
-            det[delay_count] = np.sum(det_val)/len(wave_nums)
+            if delays[delay_count] not in memo:
+                mq = Qs * (-1. * ang_dif_factor * np.cos(delays[delay_count] * wave_nums) * np.sin(2 * phi))
+                mu = -1.*Us/4. * (np.sin(2 * (alpha - 2 * phi)) + np.sin(2 * alpha)) * np.cos( delays[delay_count] * wave_nums)
+                mv = Vs * ang_dif_factor * np.sin(delays[delay_count] * wave_nums)
+                det_val = (mq + mu + mv) * weights
+                memo[delays[delay_count]] = np.sum(det_val)/len(wave_nums)
+            det[delay_count] = memo[delays[delay_count]]
         return det
