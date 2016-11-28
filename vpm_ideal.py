@@ -35,7 +35,7 @@ class IdealVPM(object):
             return memo[key]
         return helper
 
-    def det_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs):
+    def mat_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs):
         ''' follows the spirit and coordinate conventions of Chuss et al 2012. Non-modulated terms
         have been dropped.
 
@@ -70,7 +70,7 @@ class IdealVPM(object):
         return m
 
 
-    def slow_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs):
+    def det_vpm(self, alpha, phi, theta, dists, wavelengths, weights, Is, Qs, Us, Vs):
         ''' follows the spirit and coordinate conventions of Chuss et al 2012. DC terms are droppded.
         alpha (float):[radians] angle of the detectors w.r.t projected grid wires
         phi (float): [radians] angle of grid wires w.r.t. plane of incidence [radians]
