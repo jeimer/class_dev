@@ -93,7 +93,7 @@ def ln_post(walker, vpm_pos, det_data, wavelengths, weights, vpm):
 
 
 on_paths = ['/data/field/2016-10/2016-10-08/2016-10-08-14-50-00/',
-            'data/field/2016-10/2016-10-08/2016-10-08-15-00-00/',
+            '/data/field/2016-10/2016-10-08/2016-10-08-15-00-00/',
             '/data/field/2016-10/2016-10-08/2016-10-08-15-10-00/']
 
 time_edge_file = '/home/eimer/class/my_dev/calibration_grid_data/20161008_sparse_grid_el45_bs0_on.csv'
