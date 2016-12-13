@@ -3,6 +3,7 @@ import emcee
 import numpy as np
 
 import tod_ops
+import vpm_ideal
 import si_constants
 
 
