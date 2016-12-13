@@ -65,7 +65,7 @@ def ln_prior(walker, num_angles):
 def vpm_model(alpha, phi, theta, d_offset, p_offset, u, vpm_pos, wavelengths, weights, vpm):
     vpm_model = []
     for meas_num in range(len(vpm_pos)):
-        dist = vpm_pos[meas_num + d_offset]
+        dist = vpm_pos[meas_num] + d_offset
         vpm_model += [vpm.det_vpm(alpha, phi, theta, dist, wavelengths,
                                   weights, u[meas_num], 0, u[meas_num], 0) + p_offset[meas_num]]
     return vpm_model
