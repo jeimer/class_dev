@@ -3,6 +3,7 @@ import emcee
 import numpy as np
 
 import tod_ops
+import si_constants
 
 
 def from_data(m_dict, det_num):
@@ -103,7 +104,6 @@ num_waves = 200
 freq_low = 33e9
 freq_hi = 43e9
 
-print(on_paths)
 m_dict, cal_grd_angs = tod_ops.make_sparse_grid_dict2(on_paths, time_edge_file, skip_meas = [0])
 tod_ops.pre_filter_sparse_grid_dict(m_dict, tau_file)
 s_det_data, s_vpm_pos = single_visit_form_data(m_dict, 0, 0)
