@@ -79,7 +79,7 @@ def ln_like(walker, vpm_pos, det_data, wavelengths, weights, vpm):
     p_offsets = walker[4:(4 + num_angles)]
     us = walker[4 + num_angles:]
     diff = 0
-    vpm_m = vpm_model(alpha, phi, theta, d_offset, p_offset, us, vpm_pos, wavelengths, weights, vpm)
+    vpm_m = vpm_model(alpha, phi, theta, d_offset, p_offsets, us, vpm_pos, wavelengths, weights, vpm)
     for setup in range(num_angles):
         diff += np.sum((det_data[setup] - vpm_m[setup])**2)
     return np.sum(diff)
@@ -89,4 +89,5 @@ def ln_post(walker, vpm_pos, det_data, wavelengths, weights, vpm):
     if not np.isfinite(lp):
         return -np.inf
     return lp + ln_like(walker, vpm_pos, det_data, wavelengths, weights, vpm)
+
 
