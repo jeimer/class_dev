@@ -141,8 +141,8 @@ p_offset_w = np.random.normal(p_offset_0[0], s_p_offset, (nwalkers, len(s_vpm_po
 u_w = np.random.normal(u_0[0], s_u, (nwalkers, len(s_vpm_pos)))
 p0 = np.hstack((alpha_w, phi_w, theta_w, d_offset_w, p_offset_w, u_w))
 
-sampler = emcee.EnsembleSampler(nwalkers, ndim, ln_prob, args = (s_vpm_pos, s_det_data), threads = 20)
-pos, prob, state = sampler.run_mcmc(p0, 5)
+#sampler = emcee.EnsembleSampler(nwalkers, ndim, ln_prob, args = (s_vpm_pos, s_det_data), threads = 20)
+#pos, prob, state = sampler.run_mcmc(p0, 5)
 
 
 
