@@ -2,6 +2,7 @@
 import emcee
 import numpy as np
 
+import tod_ops
 
 
 def from_data(m_dict, det_num):
@@ -89,5 +90,61 @@ def ln_post(walker, vpm_pos, det_data, wavelengths, weights, vpm):
     if not np.isfinite(lp):
         return -np.inf
     return lp + ln_like(walker, vpm_pos, det_data, wavelengths, weights, vpm)
+
+
+on_paths = ['/data/field/2016-10/2016-10-08/2016-10-08-14-50-00/',
+            'data/field/2016-10/2016-10-08/2016-10-08-15-00-00/',
+            '/data/field/2016-10/2016-10-08/2016-10-08-15-10-00/']
+
+time_edge_file = '/home/eimer/class/my_dev/calibration_grid_data/20161008_sparse_grid_el45_bs0_on.csv'
+tau_file = '/home/eimer/class/my_dev/calibration_grid_data/2016-10-08_BS0_cal_grid.pickle'
+
+num_waves = 200
+freq_low = 33e9
+freq_hi = 43e9
+
+
+
+m_dict, cal_grd_angs = tod_ops.make_sparse_grid_dict2(on_paths, time_edge_file, skip_meas = [0])
+tod_ops.pre_filter_sparse_grid_dict(m_dict, tau_file)
+s_det_data, s_vpm_pos = single_visit_form_data(m_dict, 0, 0)
+
+
+
+wavelengths = si_constants.SPEED_C/np.linspace(freq_low,freq_hi,num_waves)
+weights = np.ones(len(wavelengths))
+vpm = vpm_ideal.IdealVPM()
+vpm_pos = [vpm_data/1e3 for vpm_data in s_vpm_pos]
+
+alpha_0 = np.pi/4.
+phi_0 = np.pi/2.
+theta_0 = 20 * np.pi/180.
+d_offset_0 = 0.00012
+p_offset_0 = np.zeros(len(vpm_pos))
+u_0 = np.ones(len(vpm_pos)) * 1e-3
+p_0 = np.array([alpha_0, phi_0, theta_0, d_offset_0])
+p_0 = np.append(p_0, [p_offset_0, u_0])
+
+ndim = 4 + 2 * len(s_vpm_pos)
+nwalkers = 2 * ndim + 2
+s_alpha = alpha_0/10.
+s_phi = phi_0/10.
+s_theta = theta_0/10.
+s_d_offset = d_offset_0/5.
+s_p_offset = 0.001
+s_u = 0.1
+alpha_w = np.random.normal(alpha_0, s_alpha, (nwalkers,1))
+phi_w = np.random.normal(phi_0, s_phi, (nwalkers,1))
+theta_w = np.random.normal(theta_0, s_theta, (nwalkers, 1))
+d_offset_w = np.random.normal(d_offset_0, s_d_offset, (nwalkers, 1))
+p_offset_w = np.random.normal(p_offset_0[0], s_p_offset, (nwalkers, len(s_vpm_pos)))
+u_w = np.random.normal(u_0[0], s_u, (nwalkers, len(s_vpm_pos)))
+p0 = np.hstack((alpha_w, phi_w, theta_w, d_offset_w, p_offset_w, u_w))
+
+sampler = emcee.EnsembleSampler(nwalkers, ndim, ln_prob, args = (s_vpm_pos, s_det_data), threads = 20)
+pos, prob, state = sampler.run_mcmc(p0, 5)
+
+
+
 
 
