@@ -57,7 +57,7 @@ def ln_prior(walker, num_angles):
         if not np.isfinite(ln_p_offset_prior(case)):
             return -np.inf
     for case in us:
-        if not np.isfinte(ln_u_prior(case)):
+        if not np.isfinite(ln_u_prior(case)):
             return -np.inf
     return 0
 
