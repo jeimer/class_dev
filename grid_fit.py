@@ -23,10 +23,12 @@ def from_data(m_dict, det_num):
 def single_visit_form_data(m_dict, det_num, visit_num):
     det_data = []
     vpm_pos = []
+    angs = []
     for key in m_dict:
         det_data += [m_dict[key][visit_num].data[det_num]]
         vpm_pos += [m_dict[key][visit_num].vpm]
-    return det_data, vpm_pos
+        angs += [key]
+    return det_data, vpm_pos, angs
 
 
 def uniform_lnprior(val, min_val, max_val):
@@ -109,7 +111,7 @@ visit_num = 0
 
 m_dict, cal_grd_angs = tod_ops.make_sparse_grid_dict2(on_paths, time_edge_file, skip_meas = [0])
 tod_ops.pre_filter_sparse_grid_dict(m_dict, tau_file)
-s_det_data, s_vpm_pos = single_visit_form_data(m_dict, det_num, visit_num)
+s_det_data, s_vpm_pos, angs = single_visit_form_data(m_dict, det_num, visit_num)
 
 wavelengths = si_constants.SPEED_C/np.linspace(freq_low,freq_hi,num_waves)
 weights = np.ones(len(wavelengths))
@@ -121,7 +123,7 @@ phi_0 = np.pi/2.
 theta_0 = 20 * np.pi/180.
 d_offset_0 = 0.00012
 p_offset_0 = np.zeros(len(vpm_pos))
-u_0 = np.ones(len(vpm_pos)) * 1e-3
+u_0 = np.array([0.02, 0.2, 0.2, -0.03, -0.2, -0.2, 0.03, 0.25, 0.2, -0.04, -0.2, -0.18])
 p_0 = np.array([alpha_0, phi_0, theta_0, d_offset_0])
 p_0 = np.append(p_0, [p_offset_0, u_0])
 
@@ -132,7 +134,7 @@ s_phi = phi_0/10.
 s_theta = theta_0/10.
 s_d_offset = d_offset_0/5.
 s_p_offset = 0.001
-s_u = 0.1
+s_u = 0.04
 alpha_w = np.random.normal(alpha_0, s_alpha, (nwalkers,1))
 phi_w = np.random.normal(phi_0, s_phi, (nwalkers,1))
 theta_w = np.random.normal(theta_0, s_theta, (nwalkers, 1))
