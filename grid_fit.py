@@ -38,8 +38,8 @@ ln_alpha_prior = lambda alpha: uniform_lnprior(alpha, np.pi/4. * 0.5, np.pi/4. *
 ln_phi_prior = lambda phi: uniform_lnprior(phi, np.pi/2. * 0.5, np.pi/2. * 1.5)
 ln_theta_prior = lambda theta: uniform_lnprior(theta, 5 * np.pi/180., 40 * np.pi/180.)
 ln_d_offset_prior = lambda d_offset: uniform_lnprior(d_offset, 0, 0.001)
-ln_p_offset_prior = lambda p_offset: uniform_lnprior(p_offset, -0.05, 0.05)
-ln_u_prior = lambda u: uniform_lnprior(u, -.15, .15)
+ln_p_offset_prior = lambda p_offset: uniform_lnprior(p_offset, -0.01, 0.01)
+ln_u_prior = lambda u: uniform_lnprior(u, -.3, .3)
 
 def ln_prior(walker, num_angles):
     alpha = walker[0]
