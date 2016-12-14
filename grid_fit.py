@@ -67,7 +67,7 @@ def ln_prior(walker, num_angles):
 
 def vpm_model(alpha, phi, theta, d_offset, p_offset, u, vpm_pos, wavelengths, weights, vpm):
     vpm_model = []
-    for meas_num in range(len(vpm_pos)):
+    for meas_num in range(len(vpm_pos)):l
         dist = vpm_pos[meas_num] + d_offset
         vpm_model += [vpm.det_vpm(alpha, phi, theta, dist, wavelengths,
                                   weights, u[meas_num], 0, u[meas_num], 0) + p_offset[meas_num]]
@@ -104,10 +104,12 @@ tau_file = '/home/eimer/class/my_dev/calibration_grid_data/2016-10-08_BS0_cal_gr
 num_waves = 200
 freq_low = 33e9
 freq_hi = 43e9
+det_num = 2
+visit_num = 0
 
 m_dict, cal_grd_angs = tod_ops.make_sparse_grid_dict2(on_paths, time_edge_file, skip_meas = [0])
 tod_ops.pre_filter_sparse_grid_dict(m_dict, tau_file)
-s_det_data, s_vpm_pos = single_visit_form_data(m_dict, 0, 0)
+s_det_data, s_vpm_pos = single_visit_form_data(m_dict, det_num, visit_num)
 
 wavelengths = si_constants.SPEED_C/np.linspace(freq_low,freq_hi,num_waves)
 weights = np.ones(len(wavelengths))
