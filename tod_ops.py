@@ -518,10 +518,15 @@ def make_sparse_grid_dict2(dir_paths, ang_path, skip_meas = None):
     '''
     date_string = dir_paths[0].split('/')[4].split('-') #assumes dir_paths are all on the same day
     date_string = [int(item) for item in date_string]
-    ct_pairs, angles = load_sparse_grid_csv(date_string[0], date_string[1], date_string[2], ang_path)
+    tct_pairs, tangles = load_sparse_grid_csv(date_string[0], date_string[1], date_string[2], ang_path)
     #remove the measurments indicated by skip_meas
-    ct_pairs = np.delete(ct_pairs, skip_meas, axis = 0)
-    angles = np.delete(ct_pairs, skip_meas, axis = 0)
+    ct_pairs = []
+    angles = []
+    for index in range(len(ct_pairs)):
+        if index not in skip_meas:
+            ct_pairs += [tct_pairs[index]]
+            angles += [tangles[index]]
+
     cal_angles = wire_grid_cal_angle(angles)
     m_dict = {key:[] for key in np.unique(cal_angles)}
     path_num = 0
