@@ -7,7 +7,7 @@ import vpm_ideal
 import si_constants
 
 
-def from_data(m_dict, det_num):
+def form_data(m_dict, det_num):
     det_data = []
     ang_num = 0
     vpm_pos = []
@@ -40,16 +40,16 @@ ln_alpha_prior = lambda alpha: uniform_lnprior(alpha, np.pi/4. * 0.5, np.pi/4. *
 ln_phi_prior = lambda phi: uniform_lnprior(phi, np.pi/2. * 0.5, np.pi/2. * 1.5)
 ln_theta_prior = lambda theta: uniform_lnprior(theta, 5 * np.pi/180., 40 * np.pi/180.)
 ln_d_offset_prior = lambda d_offset: uniform_lnprior(d_offset, 0, 0.001)
-ln_p_offset_prior = lambda p_offset: uniform_lnprior(p_offset, -0.01, 0.01)
 ln_u_prior = lambda u: uniform_lnprior(u, -.3, .3)
+ln_q_prior = lambda q: uniform_lnprior(q, -.3, .3)
 
 def ln_prior(walker, num_angles):
     alpha = walker[0]
     phi = walker[1]
     theta = walker[2]
     d_offset = walker[3]
-    p_offsets = walker[4:(4 + num_angles)]
-    us = walker[4 + num_angles:]
+    qs = walker[4:4+num_angles]
+    us = walker[4+num_angles:]
     if not np.isfinite(ln_alpha_prior(alpha)):
         return -np.inf
     if not np.isfinite(ln_phi_prior(phi)):
@@ -58,21 +58,31 @@ def ln_prior(walker, num_angles):
         return -np.inf
     if not np.isfinite(ln_d_offset_prior(d_offset)):
         return -np.inf
-    for case in p_offsets:
-        if not np.isfinite(ln_p_offset_prior(case)):
+    for case in qs:
+        if not np.isfinite(ln_q_prior(case)):
             return -np.inf
     for case in us:
-        if not np.isfinite(ln_u_prior(case)):
+        if not np.isfinte(ln_u_prior(case)):
             return -np.inf
     return 0
 
 
-def vpm_model(alpha, phi, theta, d_offset, p_offset, u, vpm_pos, wavelengths, weights, vpm):
+def vpm_model_r_chi(alpha, phi, theta, d_offset, p, chi, vpm_pos, wavelengths, weights, vpm):
     vpm_model = []
     for meas_num in range(len(vpm_pos)):l
         dist = vpm_pos[meas_num] + d_offset
-        vpm_model += [vpm.det_vpm(alpha, phi, theta, dist, wavelengths,
-                                  weights, u[meas_num], 0, u[meas_num], 0) + p_offset[meas_num]]
+        step_model = vpm.det_vpm(alpha, phi, theta, dist, wavelengths,
+                                  weights, p, np.cos(chi[2 * meas_num]), np.sin(2*chi[meas_num]), 0)
+        vpm_model += [step_model - step_model.mean()]
+    return vpm_model
+
+def vpm_model_q_u(alpha, phi, theta, d_offset, q, u, vpm_pos, wavelengths, weights, vpm):
+    vpm_model = []
+    for meas_num in range(len(vpm_pos)):
+        dist = vpm_pos[meas_num] + d_offset
+        step_model = vpm.det_vpm(alpha, phi, theta, dist, wavelengths,
+                                  weights, np.sqrt(q[meas_num]**2 + u[meas_num]**2), q, u, 0)
+        vpm_model += [step_model - step_model.mean()]
     return vpm_model
 
 def ln_like(walker, vpm_pos, det_data, wavelengths, weights, vpm):
@@ -81,10 +91,9 @@ def ln_like(walker, vpm_pos, det_data, wavelengths, weights, vpm):
     phi = walker[1]
     theta = walker[2]
     d_offset = walker[3]
-    p_offsets = walker[4:(4 + num_angles)]
-    us = walker[4 + num_angles:]
+    us = walker[4:]
     diff = 0
-    vpm_m = vpm_model(alpha, phi, theta, d_offset, p_offsets, us, vpm_pos, wavelengths, weights, vpm)
+    vpm_m = vpm_model(alpha, phi, theta, d_offset, us, vpm_pos, wavelengths, weights, vpm)
     for setup in range(num_angles):
         diff += np.sum((det_data[setup] - vpm_m[setup])**2)
     return np.sum(diff)
@@ -122,7 +131,6 @@ alpha_0 = np.pi/4.
 phi_0 = np.pi/2.
 theta_0 = 20 * np.pi/180.
 d_offset_0 = 0.00012
-p_offset_0 = np.zeros(len(vpm_pos))
 u_0 = np.array([0.02, 0.2, 0.2, -0.03, -0.2, -0.2, 0.03, 0.25, 0.2, -0.04, -0.2, -0.18])
 p_0 = np.array([alpha_0, phi_0, theta_0, d_offset_0])
 p_0 = np.append(p_0, [p_offset_0, u_0])

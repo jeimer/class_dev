@@ -524,9 +524,7 @@ def make_sparse_grid_dict2(dir_paths, ang_path, skip_meas = None):
     for index in range(len(tct_pairs)):
         if index not in skip_meas:
             ct_pairs += [tct_pairs[index]]
-    print(ct_pairs)
     angles = np.delete(angles, skip_meas, axis = 0)
-    print(angles)
 
     cal_angles = wire_grid_cal_angle(angles)
     m_dict = {key:[] for key in np.unique(cal_angles)}
