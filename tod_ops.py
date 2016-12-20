@@ -521,10 +521,13 @@ def make_sparse_grid_dict2(dir_paths, ang_path, skip_meas = None):
     tct_pairs, angles = load_sparse_grid_csv(date_string[0], date_string[1], date_string[2], ang_path)
     #remove the measurments indicated by skip_meas
     ct_pairs = []
-    for index in range(len(tct_pairs)):
-        if index not in skip_meas:
-            ct_pairs += [tct_pairs[index]]
-    angles = np.delete(angles, skip_meas, axis = 0)
+    if skip_meas not None:
+        for index in range(len(tct_pairs)):
+            if index not in skip_meas:
+                ct_pairs += [tct_pairs[index]]
+        angles = np.delete(angles, skip_meas, axis = 0)
+    else:
+        ct_pairs = tct_pairs
 
     cal_angles = wire_grid_cal_angle(angles)
     m_dict = {key:[] for key in np.unique(cal_angles)}
