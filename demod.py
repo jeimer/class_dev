@@ -59,6 +59,7 @@ class Modulator():
         print( ' length of filter is :', M)
         fc = cutoff/self._sampling_freq
         samps = np.arange(M)
+        samps[M/2] = 1
         h = np.sin(2 * np.pi* fc * (samps - M/2))/(samps - M/2) * \
             (0.42 - 0.5 * np.cos(2 * np.pi * samps/ M) + \
              0.08 * np.cos(4 * np.pi * samps/ M))
