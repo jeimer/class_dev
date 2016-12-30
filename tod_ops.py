@@ -105,6 +105,10 @@ def eval_hyst(tau, in_tod, det_num):
     mean_dec = dec_y / dec_hist
     eom_dec = np.sqrt((dec_y2/dec_hist - mean_dec * mean_dec)/(dec_hist-1))
 
+    print(mean_inc)
+    print(eom_inc)
+    print(mean_dec)
+    print(eom_dec)
     return hyst_metric(mean_inc, eom_inc, mean_dec, eom_dec)
 
 def apply_filter(data, filt):
