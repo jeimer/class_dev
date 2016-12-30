@@ -7,7 +7,7 @@ from datetime import datetime
 
 
 from moby2.util.mce import MCEButterworth, MCERunfile
-from moby2.instruments.class_telescope.products import get_tod
+from moby2.instruments.class_telescope.products import get_tod, optical_det_mask
 from moby2.instruments.class_telescope import calibrate
 from moby2.tod import cuts
 import moby2
@@ -341,7 +341,8 @@ def repack_chunk(paths, start, stop):
     span = DpkgSpan(tod_start, tod_stop)
     temp_tod = span.get_tod()
     runfile_ids = np.unique(temp_tod.get_sync_data('mceq_runfile_id'))
-    tod = span.get_tod(runfile_ctime = runfile_ids[0])
+    optical_m = optical_det_mask(recv = 'classq1')
+    tod = span.get_tod(runfile_ctime = runfile_ids[0], det_uid_mask = optical_m)
     tod.data = np.require(tod.data, requirements = ['C', 'A'])
     return tod
 
