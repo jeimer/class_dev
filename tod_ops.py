@@ -53,7 +53,7 @@ def hyst_metric(y_1, e_1, y_2, e_2):
     den = np.sqrt(e_1**2 + e_2**2)
     try:
         val = num / den
-    except RuntimeWarning:
+    except:
         print(num)
         print(den)
     return val.sum()
