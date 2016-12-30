@@ -106,45 +106,6 @@ def eval_hyst(tau, in_tod, det_num):
 
     return hyst_metric(mean_inc, eom_inc, mean_dec, eom_dec)
 
-
-
-def eval_hyst_old(tau, tes_dat, vpm_dat):
-    '''returns the value of hyst_metric for given choice of tau, after being removed from tes_dat. assumeing vpm_dat
-    grid mirror separations.
-    tau: (float) time constant (seconds)
-    tes_dat: (array like) single dimential array of tes time ordered data.
-    vpm_dat: (array like) single dimentional array of grid-mirror separation (mm)'''
-
-    vpm_inc, vpm_dec = vpm_direction_ind(vpm_dat)
-
-    print('shape is, ', np.shape(tes_dat))
-    defilt_data = remove_tau(tes_dat, tau)
-
-    print('shape is, ', np.shape(defilt_data))
-
-    single_tes = defilt_data - defilt_data.mean()
-    increase_tes = single_tes[vpm_inc]
-    decrease_tes = single_tes[vpm_dec]
-
-    #first select bins for entire data set
-    hist, bins = np.histogram(vpm_dat,'auto')
-
-    inc_hist, inc_bins = np.histogram(vpm_dat[vpm_inc], bins)
-    inc_y, _ = np.histogram(vpm_dat[vpm_inc], bins, weights = increase_tes)
-    inc_y2, _ = np.histogram(vpm_dat[vpm_inc], bins, weights = increase_tes * increase_tes)
-    dec_hist, dec_bins = np.histogram(vpm_dat[vpm_dec], bins)
-    dec_y, _ = np.histogram(vpm_dat[vpm_dec], bins, weights = decrease_tes)
-    dec_y2, _ = np.histogram(vpm_dat[vpm_dec], bins, weights = decrease_tes * decrease_tes)
-
-    mid = [(a+b)/2 for a,b in zip(bins[:-1], bins[1:])]
-    mean_inc = inc_y / inc_hist
-    eom_inc = np.sqrt((inc_y2/inc_hist - mean_inc * mean_inc)/(inc_hist-1))
-
-    mean_dec = dec_y / dec_hist
-    eom_dec = np.sqrt((dec_y2/dec_hist - mean_dec * mean_dec)/(dec_hist-1))
-
-    return hyst_metric(mean_inc, eom_inc, mean_dec, eom_dec)
-
 def apply_filter(data, filt):
     ''' given configuration domain data and frequency domain filt transfer function, this function returns
     an array of data to which the filter has been applied.
@@ -154,21 +115,7 @@ def apply_filter(data, filt):
     fft_data = np.fft.fft(data)
     return np.fft.ifft(fft_data * filt).real
 
-def find_tau(tes_dat, vpm_dat):
-    '''returns an array of time constant tau values for each detector in tes_dat.
-    tes_dat: (array like) tod.data type array.
-    vpm_dat: (array like) grid mirror separation (mm)'''
-    bound = (0.0009, 0.01)
-    if len(np.shape(tes_dat)) == 1:
-        res = [optimize.minimize_scalar(eval_hyst_old, bounds = bound, args = (tes_dat, vpm_dat), method = 'Bounded' ).x]
-    else:
-        res = []
-        num_dets = np.shape(tes_dat)[0]
-        for det_num in range(num_dets):
-            res += [optimize.minimize_scalar(eval_hyst_old, bounds = bound, args = (tes_dat[det_num,:], vpm_dat), method = 'Bounded' ).x]
-    return np.array(res)
-
-def find_tau2(tod):
+def find_tau(tod):
     '''returns an array of time constant values for each detector in tod.
     Parameters:
     tod: (object) moby2 tod type object.
@@ -535,7 +482,7 @@ def make_tau_dic(cal_grid_dic):
     for key in cal_grid_dic:
         for visit in cal_grid_dic[key]:
             print('working on measurement:', samp_num)
-            taus[key] += [find_tau2(visit)]
+            taus[key] += [find_tau(visit)]
             samp_num += 1
     return taus
 
