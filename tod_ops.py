@@ -51,6 +51,7 @@ def hyst_metric(y_1, e_1, y_2, e_2):
     the y-values'''
     num = (y_1 - y_2)**2
     den = np.sqrt(e_1**2 + e_2**2)
+    np.seterr(all = 'raise')
     try:
         val = num / den
     except:
