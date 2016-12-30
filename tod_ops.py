@@ -55,7 +55,7 @@ def hyst_metric(y_1, e_1, y_2, e_2):
     return val.sum()
 
 
-def eval_hysteresis(tau, in_tod, det_num):
+def eval_hyst(tau, in_tod, det_num):
     '''Calculates the level of hysteresis of a given detector from a givin tod
     once a specified time-constant has been removed from the data.
     Parameters:
@@ -108,7 +108,7 @@ def eval_hysteresis(tau, in_tod, det_num):
 
 
 
-def eval_hysteresis(tau, tes_dat, vpm_dat):
+def eval_hyst_old(tau, tes_dat, vpm_dat):
     '''returns the value of hyst_metric for given choice of tau, after being removed from tes_dat. assumeing vpm_dat
     grid mirror separations.
     tau: (float) time constant (seconds)
@@ -160,12 +160,12 @@ def find_tau(tes_dat, vpm_dat):
     vpm_dat: (array like) grid mirror separation (mm)'''
     bound = (0.0009, 0.01)
     if len(np.shape(tes_dat)) == 1:
-        res = [optimize.minimize_scalar(eval_hysteresis, bounds = bound, args = (tes_dat, vpm_dat), method = 'Bounded' ).x]
+        res = [optimize.minimize_scalar(eval_hyst_old, bounds = bound, args = (tes_dat, vpm_dat), method = 'Bounded' ).x]
     else:
         res = []
         num_dets = np.shape(tes_dat)[0]
         for det_num in range(num_dets):
-            res += [optimize.minimize_scalar(eval_hysteresis, bounds = bound, args = (tes_dat[det_num,:], vpm_dat), method = 'Bounded' ).x]
+            res += [optimize.minimize_scalar(eval_hyst_old, bounds = bound, args = (tes_dat[det_num,:], vpm_dat), method = 'Bounded' ).x]
     return np.array(res)
 
 def find_tau2(tod):
@@ -181,7 +181,7 @@ def find_tau2(tod):
     res = []
     num_dets = np.shape(tod.data)[0]
     for det_num in range(num_dets):
-        res1 = optimize.minimize(eval_hysteresis2, [0.004], method = 'Nelder-Mead', args = (tod, det_num))
+        res1 = optimize.minimize(eval_hyst, [0.004], method = 'Nelder-Mead', args = (tod, det_num))
         res += [float(res1.x)]
 
     return np.array(res)
