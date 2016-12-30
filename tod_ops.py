@@ -13,56 +13,16 @@ from moby2.tod import cuts
 import moby2
 from classtools.users.lpp.dpkg_util import DpkgSpan, DpkgLoc
 
-
-
-def data_valid_edges(tod):
-    '''function returns a list of index pairs indicaing the ranges where the TES data from tod.data[0] is nonzero.
-    tod: valid moby2 tod object.'''
-    array_on_index = np.where(tod.data[0])[0]
-    off_edge = np.where((array_on_index[1:]-1) - array_on_index[:-1])[0]
-    inner_edges = []
-    for element in off_edge:
-        inner_edges += [array_on_index[element]]
-        inner_edges += [array_on_index[element+1]]
-    transitions = np.hstack((array_on_index[0],inner_edges, array_on_index[-1]))
-    range_pairs = zip(transitions[0::2], transitions[1::2])
-    return range_pairs
-
 def wire_grid_cal_angle(angs):
     '''returns the actual angle of the wire-grid calibrator wires
     angs: (array like) [degrees]'''
     return (angs * 0.9985 - 168.5) % 360.
 
-def vpm_direction_ind(vpm_pos):
-    '''returns a list of two lists. The first list is the indicies of vpm_pos when the value of vpm_pos is increasing.
-    The second list is the indicies of vpm_pos with the vlue is decreasing. In the case when the postion is constant,
-    the indicies alternate between the two lists every other time.
-    vpm_pos: (list like) list of vpm grid_mirror separations. '''
-    dist_inc_ind = []
-    dist_dec_ind = []
-
-    for index in range(len(vpm_pos_vector)-1):
-        prev_pos = vpm_pos[index]
-        new_pos = vpm_pos[index+1]
-        increase_score = 0
-
-        if prev_pos < new_pos:
-            dist_inc_ind += [index]
-        elif prev_pos > new_pos:
-            dist_dec_ind += [index]
-        elif increase_score % 2 == 0:
-            dist_inc_ind += [index]
-            increase_score += 1
-        else:
-            dist_dec_ind += [index]
-            increase_score += 1
-
-    return [dist_inc_ind, dist_dec_ind]
-
 def single_pole_lp_filt(freqs, tau):
     '''
-    returns the transfer function for a single pole low-pass filter with time constant tau at each frequency in freqs
-    freqs: (array like) list of frequencies [Hz]
+    returns the transfer function for a single pole low-pass filter with time
+    constant tau at each frequency in freqs freqs: (array like) list of
+    frequencies [Hz]
     tau: (float) or (array like) time constant(s) of filter [seconds]
     '''
     pole = 2.j * np.pi * freqs
@@ -73,52 +33,43 @@ def single_pole_lp_filt(freqs, tau):
         return 1./(1 + tau * pole)
 
 def vpm_direction_ind(vpm_pos):
-    '''returns a list of two lists. The first is a list of indicies of vpm_pos_vecter
-    where the value is getting larger with index, the second is a list of
-    indicies of vpm_pos_vector where the value is getting smaller with index.
-    The last point is not returned in either list.
-    vpm_pos: (list like)'''
-    dist_inc_ind = []
-    dist_dec_ind = []
-    for index in range(len(vpm_pos)-1):
-        prev_pos = vpm_pos[index]
-        new_pos = vpm_pos[index+1]
-        increase_score = 0
-        if prev_pos < new_pos:
-            dist_inc_ind += [index]
-        elif prev_pos > new_pos:
-            dist_dec_ind += [index]
-        elif increase_score%2 == 0:
-            dist_inc_ind += [index]
-            increase_score += 1
-        else:
-            dist_dec_ind += [index]
-            increase_score += 1
-    return [dist_inc_ind, dist_dec_ind]
+    '''returns a tuple of two index masks - an increasing index mask and a
+    decreasing index mask respectivly. '''
+    list = np.zeros(len(vpm_pos), dtype = bool)
+    dec = np.zeros(len(vpm_pos), dtype = bool)
+    d = np.diff(vpm_pos)
+    inc[:-1] = d >= 0
+    dec[:-1] = d < 0
+    return inc, dec
+
 
 def hyst_metric(y_1, e_1, y_2, e_2):
-    '''evaluates the level of hysteresis defined by the sum of the square of the separation in y-values (y_1, y_2),
-    deweighted by respective errors (e_1, e_2)
-    y_1, y_2: (array like) the y-values of the two branches of the hysteresis loop in question
-    e_1, e_2: (array like) the errors on the y-values'''
-    val = (y_1 - y_2)**2 / np.sqrt(e_1**2 + e_2**2)
+    '''evaluates the level of hysteresis defined by the sum of the square of
+    the separation in y-values (y_1, y_2), deweighted by respective
+    errors (e_1, e_2) y_1, y_2: (array like) the y-values of the two branches
+    of the hysteresis loop in question e_1, e_2: (array like) the errors on
+    the y-values'''
+    num = (y_1 - y_2)**2
+    den = np.sqrt(e_1**2 + e_2**2)
+    val = num / den
     return val.sum()
 
 
-def eval_hysteresis2(tau, in_tod, det_num):
-    '''Calculates the level of hysteresis of a given detector from a givin tod once a specified time-constant
-    has been removed from the data.
+def eval_hysteresis(tau, in_tod, det_num):
+    '''Calculates the level of hysteresis of a given detector from a givin tod
+    once a specified time-constant has been removed from the data.
     Parameters:
-    tau: (float) time constant of the detector to be removed from the data (seconds)
+    tau: (float) detector time constant to be deconvolved from the data (sec)
     in_tod: (tod object) moby2 tod opject.
     det_num: (int) detector number of the device to be evaluated.
     Returns:
-    hyst_metric value: (float) The hysteresis metric attempts to quantify the ammount of hysteresis in the time ordered
-    data by comparing binned data when the vpm grid-mirror distance is increasing vs when the grid-mirror distance
-    is decreasing.
+    hyst_metric value: (float) The hysteresis metric attempts to quantify the
+    ammount of hysteresis in the time ordered data by comparing binned data
+    when the vpm grid-mirror distance is increasing vs when the grid-mirror
+    distance is decreasing.
     '''
 
-    vpm_inc, vpm_dec = vpm_direction_ind(in_tod.vpm)
+    imask, dmask = vpm_direction_ind(in_tod.vpm)
 
     tod = in_tod.copy()
 
@@ -127,18 +78,20 @@ def eval_hysteresis2(tau, in_tod, det_num):
     f.apply(tod, dets = [det_num])
 
     single_tes = tod.data[det_num] - tod.data[det_num].mean()
-    increase_tes = single_tes[vpm_inc]
-    decrease_tes = single_tes[vpm_dec]
+    increase_tes = single_tes[imask]
+    decrease_tes = single_tes[dmask]
 
     #first select bins for entire data set
     hist, bins = np.histogram(tod.vpm,'auto')
+    iv = tod.vpm[imask]
+    dv = tod.vpm[dmask]
 
-    inc_hist, inc_bins = np.histogram(tod.vpm[vpm_inc], bins)
-    inc_y, _ = np.histogram(tod.vpm[vpm_inc], bins, weights = increase_tes)
-    inc_y2, _ = np.histogram(tod.vpm[vpm_inc], bins, weights = increase_tes * increase_tes)
-    dec_hist, dec_bins = np.histogram(tod.vpm[vpm_dec], bins)
-    dec_y, _ = np.histogram(tod.vpm[vpm_dec], bins, weights = decrease_tes)
-    dec_y2, _ = np.histogram(tod.vpm[vpm_dec], bins, weights = decrease_tes * decrease_tes)
+    inc_hist, inc_bins = np.histogram(iv, bins)
+    inc_y, _ = np.histogram(iv, bins, weights = increase_tes)
+    inc_y2, _ = np.histogram(iv, bins, weights = increase_tes * increase_tes)
+    dec_hist, dec_bins = np.histogram(dv, bins)
+    dec_y, _ = np.histogram(dv, bins, weights = decrease_tes)
+    dec_y2, _ = np.histogram(dv, bins, weights = decrease_tes * decrease_tes)
 
     mid = [(a+b)/2 for a,b in zip(bins[:-1], bins[1:])]
     mean_inc = inc_y / inc_hist
@@ -146,6 +99,10 @@ def eval_hysteresis2(tau, in_tod, det_num):
 
     mean_dec = dec_y / dec_hist
     eom_dec = np.sqrt((dec_y2/dec_hist - mean_dec * mean_dec)/(dec_hist-1))
+    print(mean_inc)
+    print(eom_inc)
+    print(mean_dec)
+    print(eom_dec)
 
     return hyst_metric(mean_inc, eom_inc, mean_dec, eom_dec)
 
