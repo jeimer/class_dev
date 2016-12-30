@@ -35,7 +35,7 @@ def single_pole_lp_filt(freqs, tau):
 def vpm_direction_ind(vpm_pos):
     '''returns a tuple of two index masks - an increasing index mask and a
     decreasing index mask respectivly. '''
-    list = np.zeros(len(vpm_pos), dtype = bool)
+    inc = np.zeros(len(vpm_pos), dtype = bool)
     dec = np.zeros(len(vpm_pos), dtype = bool)
     d = np.diff(vpm_pos)
     inc[:-1] = d >= 0
