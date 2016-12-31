@@ -18,20 +18,6 @@ def wire_grid_cal_angle(angs):
     angs: (array like) [degrees]'''
     return (angs * 0.9985 - 168.5) % 360.
 
-def single_pole_lp_filt(freqs, tau):
-    '''
-    returns the transfer function for a single pole low-pass filter with time
-    constant tau at each frequency in freqs freqs: (array like) list of
-    frequencies [Hz]
-    tau: (float) or (array like) time constant(s) of filter [seconds]
-    '''
-    pole = 2.j * np.pi * freqs
-    if type(tau) == np.float64 or type(tau) == float:
-        return 1./(1 + tau * pole)
-    else:
-        tau = tau[:,np.newaxis]
-        return 1./(1 + tau * pole)
-
 def vpm_direction_ind(vpm_pos):
     '''returns a tuple of two index masks - an increasing index mask and a
     decreasing index mask respectivly. '''
@@ -41,7 +27,6 @@ def vpm_direction_ind(vpm_pos):
     inc[:-1] = d >= 0
     dec[:-1] = d < 0
     return inc, dec
-
 
 def hyst_metric(y_1, e_1, y_2, e_2):
     '''evaluates the level of hysteresis defined by the sum of the square of
@@ -70,7 +55,6 @@ def eval_hyst(tau, in_tod, det_num):
     '''
 
     imask, dmask = vpm_direction_ind(in_tod.vpm)
-
     tod = in_tod.copy()
 
     f = moby2.tod.filter.TODFilter()
@@ -102,106 +86,21 @@ def eval_hyst(tau, in_tod, det_num):
 
     return hyst_metric(mean_inc, eom_inc, mean_dec, eom_dec)
 
-def apply_filter(data, filt):
-    ''' given configuration domain data and frequency domain filt transfer function, this function returns
-    an array of data to which the filter has been applied.
-    data: (array like) time domain-like data array
-    filt: (array like) transfer function of a filter evaluated at the same frequencies resulting from the fft of the data
-    '''
-    fft_data = np.fft.fft(data)
-    return np.fft.ifft(fft_data * filt).real
-
 def find_tau(tod):
     '''returns an array of time constant values for each detector in tod.
     Parameters:
-    tod: (object) moby2 tod type object.
+    tod(moby2 tod): tod for which to fit time constants
     Returns:
-    res: (numpy array) Optimization result.
-    The optimization result is an array where each element is the best fit time-constant (in seconds) of the
-    respective detector.'''
+    res(numpy array): The optimization result is an array where each element
+    is the best fit time-constant (in seconds) of the respective detector.'''
 
-    #bound = ((0.0005, 0.01),)
     res = []
     num_dets = np.shape(tod.data)[0]
     for det_num in range(num_dets):
-        res1 = optimize.minimize(eval_hyst, [0.004], method = 'Nelder-Mead', args = (tod, det_num))
+        res1 = optimize.minimize(eval_hyst, [0.004], method = 'Nelder-Mead',
+                                 args = (tod, det_num))
         res += [float(res1.x)]
-
     return np.array(res)
-
-def remove_tau(det_dat, tau):
-    '''given a detector time stream, or array of time streams, a single pole filter with time constant tau, or array of taus,
-    is deconvolved from the time stream. The recoved time stream(s) is(are) returned.
-    det_dat: (array like) first index is detector, second index is time index.
-    tau: (array like) time constant of respective detector (seconds)'''
-
-    if len(np.shape(det_dat)) == 1:
-        num_dets = 1
-        samps = np.shape(det_dat)[0]
-    else:
-        num_dets = np.shape(det_dat)[0]
-        samps = np.shape(det_dat)[1]
-    freqs = np.arange(float(samps))/samps
-    freqs[int((samps + 1)/2):] -= 1.
-    samp_freq = 25e6/100./11./113.
-    threshold = 1e-15
-    freqs *= samp_freq
-    spole = single_pole_lp_filt(freqs, tau)
-    #check that spole doesn't have numerically small numbers
-    if len(np.where(spole < threshold)[0]) > 0:
-        print('filter produces numerically unstable small numbers')
-        return 'badness'
-    else:
-        return apply_filter(det_dat, 1./spole)
-
-def cal_grid_transfer(tod, det, in_bins):
-    data = tod.data[det]
-    hist, bins = np.histogram(tod.vpm, in_bins)
-
-    y, _ = np.histogram(tod.vpm, bins, weights = data)
-    y2, _ = np.histogram(tod.vpm, bins, weights = data * data)
-    mid = [(a+b)/2 for a,b in zip(bins[:-1], bins[1:])]
-    y_mean = y / hist
-    y_eom = np.sqrt((y2 / hist - y_mean * y_mean)/(hist - 1))
-
-    return [mid, y_mean, y_eom, bins]
-
-def vpm_hyst(tes_data, vpm_data, in_bins):
-    ''' returns bin centers, mean values, and error-on-mean values for portion of data when grid-mirror distance is
-    increasing and for portion of data when grid-mirror distance is decreasing.
-    input:
-    tes_data: (array like) single detector time stream
-    vpm_data: (array like) respective vpm grid-mirror distances
-    in_bins: (list like or keyword) can be end points of bins to be used or np.histogram bin keyword
-    returned format:
-    [mid, mean_inc, eom_inc, mean_dec, eom_dec] = vpm_hyst(tes_data, vpm_data, in_bins)
-    mid = array of centers of bins
-    mean_inc = array of mean values for tes_data within respective bin when the grid-mirror distance is increasing
-    eom_inc = respective error on mean
-    mean_dec = similar to mean_inc but while grid-mirror distance is decreasing
-    eom_dec = respective error on mean
-    '''
-    vpm_inc, vpm_dec = vpm_direction_ind(vpm_data)
-    increase_tes = tes_data[vpm_inc]
-    decrease_tes = tes_data[vpm_dec]
-
-    hist, bins = np.histogram(vpm_data, in_bins)
-
-    inc_hist, inc_bins = np.histogram(vpm_data[vpm_inc], bins)
-    inc_y, _ = np.histogram(vpm_data[vpm_inc], bins, weights = increase_tes)
-    inc_y2, _ = np.histogram(vpm_data[vpm_inc], bins, weights = increase_tes * increase_tes)
-    dec_hist, dec_bins = np.histogram(vpm_data[vpm_dec], bins)
-    dec_y, _ = np.histogram(vpm_data[vpm_dec], bins, weights = decrease_tes)
-    dec_y2, _ = np.histogram(vpm_data[vpm_dec], bins, weights = decrease_tes * decrease_tes)
-
-    mid = [(a+b)/2 for a,b in zip(inc_bins[:-1], inc_bins[1:])]
-    mean_inc = inc_y / inc_hist
-    eom_inc = np.sqrt((inc_y2/inc_hist - mean_inc * mean_inc)/(inc_hist-1))
-
-    mean_dec = dec_y / dec_hist
-    eom_dec = np.sqrt((dec_y2/dec_hist - mean_dec * mean_dec)/(dec_hist-1))
-
-    return [mid, mean_inc, eom_inc, mean_dec, eom_dec]
 
 def get_tod_chunk(path, chunk = 0):
     '''
@@ -215,101 +114,6 @@ def get_tod_chunk(path, chunk = 0):
     exists = runfile_id > 0
     runfile = runfile_id[exists][chunk]
     return get_tod(path, runfile_ctime = runfile)
-
-def debutter_chunk(tod_chunk, runfile):
-    '''returns chunk of data with an inverse butterworth filter applied to tod_chunk.
-    tod_chunk: (array like) tes data to be debutterworthed. First dimesion is detector, second is time.
-    runfile: (string) filename of runfile.
-
-    This function applies the MCEButterworth inverse butterworth filter from the moby2.util.mce library
-    using the passed runfile to remove the MCE butterworth filter from the tod_chunk.
-    '''
-    mce_butter = MCEButterworth.from_runfile(runfile)
-    filtered_tod = mce_butter.apply_filter(tod_chunk, decimation = 1./113., inverse = True, gain0 = 1)
-    return filtered_tod
-
-def calib_chunk(tod_chunk, ivout, array_data):
-    '''
-    returns a calibrated chunk of data using the responsivity calculated from the passed ivout.
-    tod_chunk: (array like) tes data to be calibrated. First dimension is detector, second is time.
-    ivout: (class_sql.IvOut object) ivout object created by moby2.instruments.class_telescope.class_sql.find_iv_out_for_tod function.
-    array_data: (library) array_data with keys 'row' and 'col' containing the respective row and col of row of tod_chunk.
-    '''
-    polarity = -1
-    dac_bits = 14
-    M_ratio = 24.6
-    Rfb = 5100.
-    filtgain = 2048.
-    rc = zip(array_data['row'], array_data['col'])
-    rc = [list(el) for el in rc]
-    resp = ivout.resp_fit
-    resp_rc = [resp[p[0],p[1]] for p in rc]
-    resp_rc = np.array(resp_rc)
-    resp_rc = resp_rc[:,np.newaxis]
-    dI_dDAC = 1./2.**dac_bits/M_ratio/Rfb/filtgain
-    cal_tod_chunk = tod_chunk * dI_dDAC * polarity * resp_rc * 1e3 # nv -> pW
-    return cal_tod_chunk
-
-def butter_bandpass(lowcut, highcut, samp_freq, order = 5):
-    nyq = 0.5 * samp_freq
-    low = lowcut / nyq
-    high = highcut / nyq
-    b, a = signal.butter(order, [low, high], btype = 'band')
-    return b,a
-
-def butter_bandpass_filter(tod_in, lowcut, highcut, samp_freq, order = 5):
-    b, a = butter_bandpass(lowcut, highcut, samp_freq, order)
-    tod = tod_in.copy()
-    for det in range(len(tod.data)):
-        tod.data[det] = lfilter(b,a, tod.data[det])
-    return tod
-
-def butter_highpass_filter(data, fc, f_samp, order = 5):
-    '''
-    applies a highpass butterworth filter with fc cutoff of specified order to data
-    Parameters:
-    data: (array like) tes data to be filtered
-    fc: (float) frequency at which the gain drops to 1/sqrt(2). Units must match f_samp units.
-    f_samp: (float) sampling frequency. Units must match fc units.
-    order: (int) order of Butterworth filter to apply. Default is 5
-
-    Returns:
-    filtered_data: (array like) filtered tes data
-    '''
-    nyq = 0.5 * f_samp
-    low = fc/nyq
-    b, a = butter(order, low, btype = 'highpass')
-    return lfilter(b, a, data)
-
-def good_det_ids(array_data, bad_row = [], bad_col = []):
-    '''
-    returns a list of detector ideas that are not dark detectors, not dark squids,
-    and not bad rows nor bad collums.
-    Parameters:
-    array_data: (dictionary from tod.info.array_data) contains info describing the focal plane array
-    bad_row: (list) list of bad rows
-    bad_col: (list) list of bad columns.
-    Returns:
-    good_dets: (list) list of detectors that are not dark detectors, not dark squids, and not in bad
-    rows nor columns.
-    '''
-    num_dets = len(array_data['det_type'])
-    good_dets = []
-    for det in range(num_dets):
-        if array_data['det_type'][det] == 'H':
-            good_dets += [det]
-        elif array_data['det_type'][det] == 'V':
-            good_dets += [det]
-    bad_dets = []
-    for det in good_dets:
-        if array_data['row'][det] in bad_row:
-            bad_dets += [det]
-        if array_data['col'][det] in bad_col:
-            bad_dets += [det]
-    bad_dets = np.unique(bad_dets)
-    for det in bad_dets:
-        good_dets.remove(det)
-    return good_dets
 
 def repack_chunk(paths, start, stop, det_mask = None):
     '''
@@ -500,18 +304,3 @@ def pre_filter_sparse_grid_dict(data_dict, tau_path = None):
                 cal = calibrate.Calib(tod)
                 cal.calib_dP()
     return
-
-def remove_sparse_grid_outliers(m_dict):
-    #bin data
-    #remove all points more than four standard deviations from the median.
-    return
-
-
-
-def fix_jumps(data, lim):
-    new  = np.copy(data)
-    diff = np.diff(data)
-    index_jump = np.where(np.abs(diff) > lim)[0]
-    for i in index_jump:
-        new[i + 1:] = new[i+1:] - diff[i]
-    return new
