@@ -339,7 +339,9 @@ def repack_chunk(paths, start, stop):
     temp_tod = span.get_tod()
     runfile_ids = np.unique(temp_tod.get_sync_data('mceq_runfile_id'))
     optical_m = optical_det_mask(recv = 'classq1')
-    tod = span.get_tod(runfile_ctime = runfile_ids[0], det_uid_mask = optical_m)
+    bad_row = ~(temp_tod.info.array_data['row'] == 1)
+    d_m = optical_m * bad_row 
+    tod = span.get_tod(runfile_ctime = runfile_ids[0], det_uid_mask = d_m)
     tod.data = np.require(tod.data, requirements = ['C', 'A'])
     return tod
 
