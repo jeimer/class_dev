@@ -317,16 +317,17 @@ def good_det_ids(array_data, bad_row = [], bad_col = []):
         good_dets.remove(det)
     return good_dets
 
-def repack_chunk(paths, start, stop):
+def repack_chunk(paths, start, stop, det_mask = None):
     '''
-    Repackages the portion of a tod between start and stop indicies to be a tod.
+    Repackages the portion of a tod between start/stop indicies to be a tod.
     Parameters:
-    path: (list) full path to the dir file to be processed
-    start: (int) index from the loaded data file that will specify the start of the new tod. 
+    path(list): full path to the dir file to be processed
+    start(int): index of the loaded file that will be the start of the new tod
+    stop(int): index of the loaded file that will be the end of the new tod
+    det_mask(array): bool array of detectors to load
     Returns:
-    (int) index of the loaded data file that will specify the end of the new tod.
-    tod: (moby2 tod object) a tod objection with data originating from in the specified
-    path, but containing only the data between the specified start and stop indicies.
+    tod(moby2 tod): a tod object with data originating from in the specified
+    path, but containing only the data between the start and stop indicies.
     '''
     start_path = paths[0]
     if len(paths) == 1:
@@ -338,10 +339,7 @@ def repack_chunk(paths, start, stop):
     span = DpkgSpan(tod_start, tod_stop)
     temp_tod = span.get_tod()
     runfile_ids = np.unique(temp_tod.get_sync_data('mceq_runfile_id'))
-    optical_m = optical_det_mask(recv = 'classq1')
-    bad_row = ~(temp_tod.info.array_data['row'] == 1)
-    d_m = optical_m * bad_row 
-    tod = span.get_tod(runfile_ctime = runfile_ids[0], det_uid_mask = d_m)
+    tod = span.get_tod(runfile_ctime = runfile_ids[0], det_uid_mask = det_mask)
     tod.data = np.require(tod.data, requirements = ['C', 'A'])
     return tod
 
@@ -411,23 +409,28 @@ def load_sparse_grid_csv(year, month, day, path):
     return ct_pairs, np.array(angles)
 
 
-def make_sparse_grid_dict2(dir_paths, ang_path, skip_meas = None):
+def make_sparse_grid_dict2(dir_paths, ang_path, skip_meas = None,
+                           det_mask = None):
     '''
-    This function is designed to work with the sparse grid measurment performed in Sept 2016 or
-    afterward. Creates a dictionary holding lists of moby2 tods with calibration grid angle as keys.
+    This function is designed to work with the sparse grid measurment performed
+    in Sept 2016 or afterward. Creates a dictionary holding lists of moby2 tods
+    with calibration grid angle as keys.
     Parameters:
-    dir_paths: (list) list of full paths to dir files holding the detector data for the measurment.
-    The list must be in the same order as the anlges parameter.
-    ang_path: (string) full path to the csv file holding the start time, end time, and angles of the
-    sparse grid measurment.
+    dir_paths: (list) list of full paths to dir files holding the detector data
+    for the measurment. The list must be in the same order as the anlges
+    parameter.
+    ang_path: (string) full path to the csv file holding the start time, end
+    time, and angles of the sparse grid measurment.
     Returns:
-    m_dict: (dictionary) A dictionary with keys that are the anlges from the input angles list.
-    The dictionary elements are lists of tods contining data collected when the calibration grid
-    was at the respective angle.
+    m_dict: (dictionary) A dictionary with keys that are the anlges from the
+    input angles list. The dictionary elements are lists of tods contining data
+    collected when the calibration grid was at the respective angle.
     '''
-    date_string = dir_paths[0].split('/')[4].split('-') #assumes dir_paths are all on the same day
-    date_string = [int(item) for item in date_string]
-    tct_pairs, angles = load_sparse_grid_csv(date_string[0], date_string[1], date_string[2], ang_path)
+    #assume dir-paths are all on the same day
+    date_string = map(int, dir_paths[0].split('/')[4].split('-'))
+    #date_string = [int(item) for item in date_string]
+    tct_pairs, angles = load_sparse_grid_csv(date_string[0], date_string[1],
+                                             date_string[2], ang_path)
     #remove the measurments indicated by skip_meas
     ct_pairs = []
     if skip_meas != None:
@@ -438,38 +441,29 @@ def make_sparse_grid_dict2(dir_paths, ang_path, skip_meas = None):
     else:
         ct_pairs = tct_pairs
 
-    cal_angles = wire_grid_cal_angle(angles)
-    m_dict = {key:[] for key in np.unique(cal_angles)}
+    angles = wire_grid_cal_angle(angles)
+    m_dict = {key:[] for key in np.unique(angles)}
     path_num = 0
-    for ang_num in range(len(cal_angles)):
+    for ang_num in range(len(angles)):
         temp_tod = get_tod(dir_paths[path_num])
         f_times = temp_tod.ctime
-        max_time = f_times.max()
         start, stop = ct_pairs[ang_num]
-        if start > max_time:
+        if start > f_times.max():
             path_num += 1
         else:
             start_index = np.argwhere(f_times > start).min()
             start_path = dir_paths[path_num]
-            if stop > max_time:
-                path_num += 1 #assumes the stop point is in the next adjacent dir file in the list
+            if stop > f_times.max():
+                #assumes the stop point is in the next file in the list
+                path_num += 1 
             temp_tod = get_tod(dir_paths[path_num])
             f_times = temp_tod.ctime
             stop_index = np.argwhere(f_times < stop).max()
             stop_path = dir_paths[path_num]
-            m_dict[cal_angles[ang_num]] += [repack_chunk([start_path, stop_path], start_index, stop_index)]
-    return m_dict, cal_angles
-
-def moving_avg(a, window = 11):
-    if window % 2 == 0:
-        print('window must be odd')
-        return
-    pad = np.zeros( (window - 1)/2)
-    res = np.cumsum(a)
-    res = res[window:] - res[:-1*window]
-    res = res / float(window)
-    res = np.concatenate((pad, res, pad))
-    return res
+            m_dict[angles[ang_num]] += [repack_chunk([start_path, stop_path],
+                                                     start_index, stop_index,
+                                                     det_mask)]
+    return m_dict, angles
 
 def make_tau_dic(cal_grid_dic):
     '''
