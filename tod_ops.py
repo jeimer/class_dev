@@ -124,7 +124,6 @@ def find_tau(tod):
     res = []
     num_dets = np.shape(tod.data)[0]
     for det_num in range(num_dets):
-        print(det_num)
         res1 = optimize.minimize(eval_hyst, [0.004], method = 'Nelder-Mead', args = (tod, det_num))
         res += [float(res1.x)]
 
