@@ -265,14 +265,16 @@ def make_sparse_grid_dict2(dir_paths, ang_path, skip_meas = None,
 
 def make_tau_dic(cal_grid_dic):
     '''
-    uses find_tau2 to find the best fit time detector time constant to minimize tod hysteresis. For
-    corect interpretation of the time constant, the MCE buttorworth filter should be removed before
-    running make_tau_dic.
+    uses find_tau to find the best fit time detector time constant to minimize
+    tod hysteresis. For corect interpretation of the time constant, the MCE
+    buttorworth filter should be removed before running make_tau_dic.
     Parameters:
-    cal_grid_dic: (dictionary) excpects a dictionary in the format created by make_calibration_grid_dic
+    cal_grid_dic(dictionary): excpects a dictionary in the format created by
+    make_calibration_grid_dic
     Returns:
-    taus: (dictionary) with the same keys as the input dictionary. The elements of the dictionary are lists
-    containing the best fit time constants for each dectector for each tod.
+    taus(dictionary): with the same keys as the input dictionary. The elements
+    of the dictionary are lists containing the best fit time constants for each
+    dectector for each tod.
     '''
     taus = {key: [] for key in cal_grid_dic.keys()}
     samp_num = 0
@@ -290,17 +292,19 @@ def pre_filter_sparse_grid_dict(data_dict, tau_path = None):
     else:
         with open(tau_path, 'rb') as handle:
             taus = pickle.load(handle)
-        for angle in data_dict:
-            visit_num = 0
-            for visit in data_dict[angle]:
-                visit.cuts = cuts.get_constant_det_cuts(visit)
-                moby2.tod.filter.prefilter_tod(visit, time_constants = taus[angle][visit_num], detrend = True)
-                visit_num += 1
-                for det in range(len(visit.data)):
-                    visit.data[det] = visit.data[det] - visit.data[det].mean()
+    for key in data_dict:
+        vis_num = 0
+        for visit in data_dict[key]:
+            visit.cuts = cuts.get_constant_det_cuts(visit)
+            moby2.tod.filter.prefilter_tod(visit,
+                                           time_constants = taus[key][vis_num],
+                                           detrend = True)
+            vis_num += 1
+            for det in range(len(visit.data)):
+                visit.data[det] = visit.data[det] - visit.data[det].mean()
 
-        for key in data_dict:
-            for tod in data_dict[key]:
-                cal = calibrate.Calib(tod)
-                cal.calib_dP()
+    for key in data_dict:
+        for tod in data_dict[key]:
+            cal = calibrate.Calib(tod)
+            cal.calib_dP()
     return
