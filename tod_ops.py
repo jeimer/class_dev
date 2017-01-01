@@ -285,26 +285,30 @@ def make_tau_dic(cal_grid_dic):
             samp_num += 1
     return taus
 
-def pre_filter_sparse_grid_dict(data_dict, tau_path = None):
-    #load detector time constants
+def pre_filter_sparse_grid_dict(d_dict, tau_path = None):
+    #deconvolve readout
+    for k, visit in d_dict.items():
+        visit.cuts = cuts.get_constant_det_cuts(visit)
+        moby2.tod.filter.prefilter_tod(visit) 
     if tau_path == None:
-        taus = make_tau_dic(data_dict)
+        taus = make_tau_dic(d_dict)
     else:
+        #load detector time constants
         with open(tau_path, 'rb') as handle:
             taus = pickle.load(handle)
-    for key in data_dict:
+    for k in d_dict:
         vis_num = 0
-        for visit in data_dict[key]:
-            visit.cuts = cuts.get_constant_det_cuts(visit)
+        for visit in d_dict[k]:
+            #visit.cuts = cuts.get_constant_det_cuts(visit)
             moby2.tod.filter.prefilter_tod(visit,
-                                           time_constants = taus[key][vis_num],
+                                           deconvolve_readout = False,
+                                           time_constants = taus[k][vis_num],
                                            detrend = True)
             vis_num += 1
             for det in range(len(visit.data)):
                 visit.data[det] = visit.data[det] - visit.data[det].mean()
-
-    for key in data_dict:
-        for tod in data_dict[key]:
+    for key in d_dict:
+        for tod in d_dict[key]:
             cal = calibrate.Calib(tod)
             cal.calib_dP()
-    return
+    return taus
