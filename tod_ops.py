@@ -290,7 +290,7 @@ def pre_filter_sparse_grid_dict(d_dict, tau_path = None):
     #for k, visit in d_dict.items():
     #    visit.cuts = cuts.get_constant_det_cuts(visit)
     #    moby2.tod.filter.prefilter_tod(visit)
-    for k in dict:
+    for k in d_dict:
         for visit in d_dict[k]:
             visit.cuts = cuts.get_constant_det_cuts(visit)
             moby2.tod.filter.prefilter_tod(vist)
