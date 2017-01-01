@@ -287,9 +287,13 @@ def make_tau_dic(cal_grid_dic):
 
 def pre_filter_sparse_grid_dict(d_dict, tau_path = None):
     #deconvolve readout
-    for k, visit in d_dict.items():
-        visit.cuts = cuts.get_constant_det_cuts(visit)
-        moby2.tod.filter.prefilter_tod(visit) 
+    #for k, visit in d_dict.items():
+    #    visit.cuts = cuts.get_constant_det_cuts(visit)
+    #    moby2.tod.filter.prefilter_tod(visit)
+    for k in dict:
+        for visit in d_dict[k]:
+            visit.cuts = cuts.get_constant_det_cuts(visit)
+            moby2.tod.filter.prefilter_tod(vist)
     if tau_path == None:
         taus = make_tau_dic(d_dict)
     else:
