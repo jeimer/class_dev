@@ -105,7 +105,8 @@ def find_tau(tod):
 def get_tod_chunk(path, chunk = 0):
     '''
     loads a tod even when a runfile is not pressent for the full tod.
-    A tod is returned with the runfile forced to be the first valid runfile in the passed path.
+    A tod is returned with the runfile forced to be the first valid runfile in
+    the passed path.
     path: (string like) full path to targeted tod.
     '''
     tod = get_tod(path)
@@ -141,24 +142,24 @@ def repack_chunk(paths, start, stop, det_mask = None):
     tod.data = np.require(tod.data, requirements = ['C', 'A'])
     return tod
 
-def make_sparse_grid_dict1(paths, angles, min_chunk_size = 1000):
+def make_swig_dict1(paths, angles, min_chunk_size = 1000):
     '''
-    This function is designed to work with the sparse grid measurment performed 2016-06-29
-    Creates a dictionary holding moby2 tods with calibration grid angle as keys.
+    Creates a dictionary holding moby2 tods with calibration grid angle as keys
+    for SWiG measurement on 2016-06-29.
     Parameters:
-    paths: (list) list of full paths to dir files holding the calibration data run. The
-    list must be in the same order as the anlges parameter.
-    angles: (list) List of angles at which the calibration grid was measured. These angles
-    must be in the order of the paths containing the data. If a dir file contains more than
-    one calibration grid angle, the angles meausred first must apear first in the angles
-    parameter list.
-    min_chunk_size: (int) Minimum size for a valid calibration chunk. In some relavent
-    dirfiles, data was taken only for a short time. These brief chunks of data are not actual
-    calibration grid measurements and are skipped.
+    paths(list): list of full paths to dir files holding the calibration data.
+    The list must be in the same order as the anlges parameter.
+    angles(list): List of angles at which the calibration grid was measured.
+    These angles must be in the order of the paths containing the data. If a
+    dir file contains more than one calibration grid angle, the angles meausred
+    first must apear first in the angles parameter list.
+    min_chunk_size: (int) Minimum size for a valid calibration chunk. In some
+    relavent dirfiles, data was taken only for a short time. These brief chunks
+    of data are not actual calibration grid measurements and are skipped.
     Returns:
-    chunks: (dictionary) A dictionary with keys that are the anlges from the input angles list.
-    The dictionary elements are lists of tods contining data collected when the calibration grid
-    was at the respective angle.
+    chunks(dictionary): A dictionary with keys that are the anlges from the
+    input angles list. The dictionary elements are lists of tods contining data
+    collected when the calibration grid was at the respective angle.
     '''
     chunks = {key: [] for key in angles}
     # find edges when MCE was taking data
@@ -170,23 +171,27 @@ def make_sparse_grid_dict1(paths, angles, min_chunk_size = 1000):
         # for each pair of edges, form new tod and load the relavent runfile
         for pair in edges:
             if pair[1] - pair[0] >  min_chunk_size:
-                chunks[angles[angle_num]] += [repack_chunk([path], pair[0], pair[1])]
+                chunks[angles[angle_num]] += [repack_chunk([path], pair[0],
+                                                           pair[1])]
                 angle_num += 1
     return chunks
 
-def load_sparse_grid_csv(year, month, day, path):
+def load_swig_csv(year, month, day, path):
     '''
-    Loads the start and stop times from a sparse grid measurment as recoreded in the CSV path.
-    Returns an array of pairs of the c_time values of the respective start and stop time.
+    Loads the start and stop times from a SWiG measurment from the CSV path.
+    Returns an array of pairs of the c_time values of the respective start and
+    stop time.
     Parameters:
     year: (int) year of the measurement
     month: (int) month of the measurment
     day: (int) day of the measurment
-    path: (string) full path to the file holding the csv values of the start and stop times
+    path: (string) full path to the csv file holding the start and stop times
     of the sparse grid measurment.
     Returns:
-    ct_paris: (list) list of pairs of starting and stopping times of a single angle measurment
-    angles: (list) list containing the angle of the sparse grid for the respective measurment.
+    ct_paris: (list) list of pairs of starting and stopping times of a single
+    angle measurment
+    angles: (list) list containing the angle of the sparse grid for the
+    respective measurment.
     '''
     f = open(path, 'rU')
     csv_f = csv.reader(f)
@@ -199,7 +204,7 @@ def load_sparse_grid_csv(year, month, day, path):
             start = [int(item) for item in row[0].split(':')]
             stop = [int(item) for item in row[1].split(':')]
             utc_pairs += [[datetime(year, month, day, start[0], start[1], start[2]),
-                                     datetime(year, month, day, stop[0], stop[1], stop[2])]]
+                           datetime(year, month, day, stop[0], stop[1], stop[2])]]
     ct_pairs = [ ]
     for pair in utc_pairs:
         ct_pairs += [[int((pair[0] - datetime(1970, 1, 1, 0, 0, 0, 0)).total_seconds()),
@@ -207,7 +212,7 @@ def load_sparse_grid_csv(year, month, day, path):
     return ct_pairs, np.array(angles)
 
 
-def make_sparse_grid_dict2(dir_paths, ang_path, skip_meas = None,
+def make_swig_dict2(dir_paths, ang_path, skip_meas = None,
                            det_mask = None):
     '''
     This function is designed to work with the sparse grid measurment performed
@@ -227,8 +232,8 @@ def make_sparse_grid_dict2(dir_paths, ang_path, skip_meas = None,
     #assume dir-paths are all on the same day
     date_string = map(int, dir_paths[0].split('/')[4].split('-'))
     #date_string = [int(item) for item in date_string]
-    tct_pairs, angles = load_sparse_grid_csv(date_string[0], date_string[1],
-                                             date_string[2], ang_path)
+    tct_pairs, angles = load_swig_csv(date_string[0], date_string[1],
+                                      date_string[2], ang_path)
     #remove the measurments indicated by skip_meas
     ct_pairs = []
     if skip_meas != None:
@@ -270,11 +275,11 @@ def make_tau_dic(cal_grid_dic):
     buttorworth filter should be removed before running make_tau_dic.
     Parameters:
     cal_grid_dic(dictionary): excpects a dictionary in the format created by
-    make_calibration_grid_dic
+    make_swig_dict2
     Returns:
     taus(dictionary): with the same keys as the input dictionary. The elements
-    of the dictionary are lists containing the best fit time constants for each
-    dectector for each tod.
+    are lists containing the best fit time constants for each detector for
+    each tod.
     '''
     taus = {key: [] for key in cal_grid_dic.keys()}
     samp_num = 0
@@ -285,11 +290,21 @@ def make_tau_dic(cal_grid_dic):
             samp_num += 1
     return taus
 
-def pre_filter_sparse_grid_dict(d_dict, tau_path = None):
+def prefilter_swig_dict(d_dict, tau_path = None):
+    '''
+    Deconvolves readout and time constants from the input data dictionary.
+    A dictionary containing the respective time constants is returned.
+    Parameters:
+    d_dict(dictionary): expects dictionary of the format created by
+    make_swig_dict2.
+    tau_path(string): path to pickled dictionary of time constants as
+    generated by make_tau_dic
+    Returns:
+    taus(dictionary): with the same keys as the input dictionary. the elements
+    are lists containing the best fit time constants for each detector for
+    each tod. 
+    '''
     #deconvolve readout
-    #for k, visit in d_dict.items():
-    #    visit.cuts = cuts.get_constant_det_cuts(visit)
-    #    moby2.tod.filter.prefilter_tod(visit)
     for k in d_dict:
         for visit in d_dict[k]:
             visit.cuts = cuts.get_constant_det_cuts(visit)
@@ -303,7 +318,6 @@ def pre_filter_sparse_grid_dict(d_dict, tau_path = None):
     for k in d_dict:
         vis_num = 0
         for visit in d_dict[k]:
-            #visit.cuts = cuts.get_constant_det_cuts(visit)
             moby2.tod.filter.prefilter_tod(visit,
                                            deconvolve_readout = False,
                                            time_constants = taus[k][vis_num],
