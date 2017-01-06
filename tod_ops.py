@@ -435,4 +435,4 @@ def apply_filter(data, impulse):
     '''
     f_data = np.fft.rfft(data)
     f_imp = np.fft.rfft(impulse)
-    return np.fft.irfft(f_data * f_imp)
+    return np.fft.irfft(f_data * f_imp, n = len(data))
