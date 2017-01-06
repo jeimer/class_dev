@@ -98,9 +98,10 @@ def find_tau(tod, bp = None):
 
     #TODO add bandpass filter to TOD prior to fitting.
     if bp != None:
-        for data in tod.data:
-            impulse = band_pass_wind_sinc(0.001, bp[0], bp[1], len(data))
-            data = apply_filter(data, impulse)
+        for det_num in range(len(tod.data)):
+            impulse = band_pass_wind_sinc(0.001, bp[0], bp[1],
+                                          len(tod.data[det_num]))
+            tod.data[det_num] = apply_filter(tod.data[det_num], impulse)
 
     res = []
     num_dets = np.shape(tod.data)[0]
