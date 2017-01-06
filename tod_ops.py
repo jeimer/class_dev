@@ -368,9 +368,9 @@ def low_pass_win_sinc(tw, fc, n):
     order = int(np.ceil( 2./ tw) * 2)
     t = np.arange(order + 1)
     t = t - order/2
-    t[m/2] = 1
+    t[order/2] = 1
     h = np.sin(2 * np.pi * fc * t)/ t
-    h[m/2] = 2 * np.pi * fc
+    h[order/2] = 2 * np.pi * fc
     h = h * np.blackman(order + 1)
     h = h / h.sum()
     s = np.zeros(n)
