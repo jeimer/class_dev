@@ -115,6 +115,22 @@ def find_tau(tod, bp = None):
 # Repackage SWiG measurment data
 #####
 
+def trim_swig_dict(d_dict, trim):
+    '''
+    edits d_dict so that the data, vpm, and ctime fields of  each tod
+    spans [trim, -trim]
+    Parameters:
+    d_dict(swig dictionary): the dictionary to be trimmed
+    trim(int): the number of items to remove from the begining and end of each
+    tod in d_dict.
+    '''
+    for key in d_dict:
+        for tod in d_dict[key]:
+            tod.data = tod.data[:,trim:-trim]
+            tod.ctime = tod.ctime[trim:-trim]
+            tod.vpm = tod.vpm[trim:-trim]
+    return
+
 
 def wire_grid_cal_angle(angs):
     '''returns the actual angle of the wire-grid calibrator wires
