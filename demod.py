@@ -5,23 +5,20 @@ class Demodulator(object):
     def __init__(self, tod):
         self._tod = tod
         self._dets = tod.det_uid
-        self._vpm_utrans_path = 'umat.npy'
-        self._vpm_vtrans_path = 'vmat.npy'
+        self._utrans_path = 'umat.npy'
+        self._vtrans_path = 'vmat.npy'
         self._bins = 'bins.npy'
-        self._utrans = np.load(self._vpm_utrans_path)[self._dets,:]
-        self._vtrans = np.load(self._vpm_vtrans_path)[self._dets,:]
-        self._pos = np.digitize(tod.vpm - 0.0001/2, np.load(self._bins))
+        self._utrans = np.load(self._utrans_path)[self._dets,:]
+        self._vtrans = np.load(self._vtrans_path)[self._dets,:]
+        self._d0 = 3.1663
+        self._pos = np.digitize(d0 - tod.vpm - 0.0001/2, np.load(self._bins))
         self._tw = 0.01
         self._fc = 1
         return
 
     def demod(self, param = 'u', fc = 1.):
-        s = {'u':[0], 'v':[1], 'uv':[0,1]}
-        pos_ind = np.digitize(self._tod.vpm, self._pos)
-        if len(s[param] > 1):
-            self._tod.data = np.array([[self._tod.data],[self._tod.data]])
-            self._tod.data *= np.array([])
-        self._tod.data *= self._trans[s[param],:,pos_ind]
+        s = {'u': self._utrans, 'v': self._vtrans}
+        self._tod.data *= s[param][self._pos]
         lpfilt()
         return
 
