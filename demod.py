@@ -7,10 +7,10 @@ class Demodulator(object):
         self._dets = tod.det_uid
         self._vpm_utrans_path = 'umat.npy'
         self._vpm_vtrans_path = 'vmat.npy'
-        self._positions = 'pos.npy'
-        self._utrans = np.load(vpm_utrans_path)[dets,:]
-        self._vtrans = np.load(vpm_vtrans_path)[dets,:]
-        self._pos = np.load(positions)
+        self._bins = 'bins.npy'
+        self._utrans = np.load(self._vpm_utrans_path)[dets,:]
+        self._vtrans = np.load(self._vpm_vtrans_path)[dets,:]
+        self._pos = np.digitize(tod.vpm - 0.0001/2, np.load(self._positions))
         self._tw = 0.01
         self._fc = 1
         return
