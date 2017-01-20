@@ -11,7 +11,7 @@ class Demodulator(object):
         self._utrans = np.load(self._utrans_path)[self._dets,:]
         self._vtrans = np.load(self._vtrans_path)[self._dets,:]
         self._d0 = 3.1663
-        self._pos = np.digitize(d0 - tod.vpm - 0.0001/2, np.load(self._bins))
+        self._pos = np.digitize(self._d0 - tod.vpm - 0.0001/2, np.load(self._bins))
         self._tw = 0.01
         self._fc = 1
         return
