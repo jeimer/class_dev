@@ -131,7 +131,6 @@ def trim_swig_dict(d_dict, trim):
             tod.vpm = tod.vpm[trim:-trim]
     return
 
-
 def wire_grid_cal_angle(angs):
     '''returns the actual angle of the wire-grid calibrator wires
     angs: (array like) [degrees]'''
@@ -327,6 +326,16 @@ def make_tau_dic(cal_grid_dic):
     return taus
 
 def deconvolve_reaout(d_dict, tau_path = None):
+    '''
+    Case function for prefilter swig dict. Deconvolves MCEButterworth useing
+    moby2.tod.filter.prefilter_tod() method. The tods in d_dict are altered. 
+    Parameters:
+    d_dict(swig dict): dicitonary of tods from which to deconvole readout
+    filter.
+    tau_path('string'): non-used. placeholding input.
+    Returns:
+    None.
+    '''
     for k in d_dict:
         for visit in d_dict[k]:
             visit.cuts = cuts.get_constant_det_cuts(visit)
@@ -334,6 +343,19 @@ def deconvolve_reaout(d_dict, tau_path = None):
     return None
 
 def deconvolve_tau(d_dict, tau_path = None):
+    '''
+    Case function for prefilter swig dict. Deconvolves detector time constants
+    using moby2.tod.filter.prefilter_tod() method. Returns a time constant
+    dictionary.
+    Parameters:
+    d_dict(swig dict): dictionary of tods from which to deconvolve detector
+    time constants.
+    tau_path('string'): path to pickled tau dicitonary if time constants have
+    previously been calculated.
+    Returns:
+    taus: dictionary with same structure as d_dict with respective time
+    constants. 
+    '''
     if tau_path == None:
         taus = make_tau_dic(d_dict)
     else:
@@ -346,16 +368,40 @@ def deconvolve_tau(d_dict, tau_path = None):
             moby2.tod.filter.prefilter_tod(visit,
                                            deconvolve_readout = False,
                                            time_constants = taus[k][vis_num],
-                                           detrend = True)
+                                           detrend = False)
             vis_num += 1
     return taus
 
 def deconvolve_r_and_t(d_dict, tau_path = None):
+    '''
+    Case function for prefilter swig dict. Deconvolves detector time constants
+    and MCEButterworth using moby2.tod.filter.prefilter_tod() method. Returns
+    a time constant dictionary.
+    Parameters:
+    d_dict(swig dict): dictionary of tods from which to deconvolve detector
+    time constants.
+    tau_path('string'): path to pickled tau dicitonary if time constants have
+    previously been calculated.
+    Returns:
+    taus: dictionary with same structure as d_dict with respective time
+    constants. 
+    '''
     deconvolve_reaout(d_dict)
     taus = deconvolve_tau(d_dict, tau_path)
     return taus
 
 def calibrate_dict(d_dict, tau_path = None):
+    '''
+    Case function for prefilter_swig_dict(). Apply the CLASS iv calibration
+    routine to all tods in the d_dict.
+    Parameters:
+    d_dict(swig dict): dicitonary of tods from which to deconvole readout
+    filter.
+    tau_path('string'): non-used. placeholding input.
+    Returns:
+    taus: dictionary with same structure as d_dict with respective time
+    constants. 
+    '''
     for key in d_dict:
         for tod in d_dict[key]:
             cal = calibrate.Calib(tod)
@@ -363,6 +409,20 @@ def calibrate_dict(d_dict, tau_path = None):
     return None
 
 def full_prefilter(d_dict, tau_path = None):
+    '''
+    Case function for prefilter swig dict. Deconvolves detector time constants
+    and MCEButterworth using moby2.tod.filter.prefilter_tod() method.
+    Also apply the CLASS iv calibration routine to all tods in the d_dict.
+    Returns a time constant dictionary. 
+    Parameters:
+    d_dict(swig dict): dictionary of tods from which to deconvolve detector
+    time constants.
+    tau_path('string'): path to pickled tau dicitonary if time constants have
+    previously been calculated.
+    Returns:
+    taus: dictionary with same structure as d_dict with respective time
+    constants. 
+    '''
     taus = deconvolve_r_and_t(d_dict, tau_path)
     calibrate_dict(d_dict)
     return taus
@@ -400,31 +460,6 @@ def prefilter_swig_dict(d_dict, mode = 'readout', tau_path = None):
                'full': full_prefilter}
     taus = t_apply[mode](d_dict, tau_path)
     return taus
-#    for k in d_dict:
-#        for visit in d_dict[k]:
-#            visit.cuts = cuts.get_constant_det_cuts(visit)
-#            moby2.tod.filter.prefilter_tod(visit)
-#    if tau_path == None:
-#        taus = make_tau_dic(d_dict)
-#    else:
-#        #load detector time constants
-#        with open(tau_path, 'rb') as handle:
-#            taus = pickle.load(handle)
-#    for k in d_dict:
-#        vis_num = 0
-#        for visit in d_dict[k]:
-#            moby2.tod.filter.prefilter_tod(visit,
-#                                           deconvolve_readout = False,
-#                                           time_constants = taus[k][vis_num],
-#                                           detrend = True)
-#            vis_num += 1
-#            for det in range(len(visit.data)):
-#                visit.data[det] = visit.data[det] - visit.data[det].mean()
-#    for key in d_dict:
-#        for tod in d_dict[key]:
-#            cal = calibrate.Calib(tod)
-#            cal.calib_dP()
-#    return taus
 
 #####
 # Begin filtering tools
