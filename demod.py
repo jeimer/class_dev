@@ -12,14 +12,13 @@ class Demodulator(object):
         self._vtrans = np.load(self._vtrans_path)[self._dets,:]
         self._d0 = 3.1663
         self._pos = np.digitize(self._d0 - tod.vpm - 0.0001/2, np.load(self._bins))
-        self._pos = np.ones((len(self._dets), 1)) * self._pos
         self._tw = 0.01
         self._fc = 1
         return
 
     def demod(self, param = 'u', fc = 1.):
         s = {'u': self._utrans, 'v': self._vtrans}
-        self._tod.data *= s[param][self._pos]
+        self._tod.data *= s[param][:, self._pos]
         lpfilt()
         return
 
