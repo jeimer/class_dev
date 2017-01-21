@@ -18,7 +18,7 @@ class Demodulator(object):
     def demod(self, param = 'u', fc = 1.):
         s = {'u': self._utrans, 'v': self._vtrans}
         self._tod.data *= s[param][:, self._pos]
-        lpfilt()
+        self.lpfilt()
         return
 
     def set_fc(self, fc):
