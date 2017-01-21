@@ -35,7 +35,7 @@ class Demodulator(object):
         h[order/2] = 2 * np.pi * self._fc
         h = h * np.blackman(order + 1)
         h = h / h.sum()
-        s = np.zeros( len(self._tod.data))
+        s = np.zeros(np.shape(self._tod.data[1]))
         s[:len(h)] = h
         imp = np.roll(s, -order/2)
         f_imp = np.fft.rfft(imp)
