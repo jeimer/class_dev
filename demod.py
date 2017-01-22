@@ -11,8 +11,9 @@ class Demodulator(object):
         self._utrans = np.load(self._utrans_path)[self._dets,:]
         self._vtrans = np.load(self._vtrans_path)[self._dets,:]
         self._pos = np.digitize(tod.vpm - 0.0001/2, np.load(self._bins))
-        self._tw = 0.01
-        self._fc = 1
+        self._sampling_freq = 25e6/100./11/113.
+        self._tw = 0.01 / self._sampling_freq
+        self._fc = 1 / self._sampling_freq
         return
 
     def demod(self, param = 'u', fc = 1.):
