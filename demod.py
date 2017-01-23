@@ -51,6 +51,7 @@ class Demodulator(object):
         '''
         f_data = np.fft.rfft(data)
         s = np.zeros(np.shape(data))
+        print(np.shape(s))
         h = kern(fc, np.shape(data)[-1])
         s[:,:len(h)] = h
         f_imp = np.fft.rfft(s)
