@@ -28,7 +28,7 @@ class Demodulator(object):
         h = h / h.sum()
         s = np.zeros(n)
         s[:len(h)] = h
-        imp = np.roll(s, -order/2)
+        return np.roll(s, -order/2)
 
     def hpkern(self, fc, n):
         hp = -lpkern(fc, n)
