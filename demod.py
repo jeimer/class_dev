@@ -69,8 +69,11 @@ class Demodulator(object):
         fh = fh/self._sampling_freq
         fl = fl/self._sampling_freq
         s = {'u': self._utrans, 'v': self._vtrans}
+        print('data shape is ', np.shape(self._tod.data))
         self._tod.data = self.filt(self.hpkern, self._tod.data, fh)
+        print('vpm shape 1 ', np.shape(self._tod.vpm))
         self._tod.vpm.reshape(1, len(self._tod.vpm))
+        print('vpm shape 1 ', np.shape(self._tod.vpm))
         self._tod.vpm = self.filt(self.hpkern, self._tod.vpm, fh)
         pos = np.digitize(self._tod.vpm - 0.0001/2, self._bins)
         self._tod.data *= s[param][:, pos]
