@@ -31,7 +31,7 @@ class Demodulator(object):
         return np.roll(s, -order/2)
 
     def hpkern(self, fc, n):
-        hp = -lpkern(fc, n)
+        hp = -self.lpkern(fc, n)
         hp[0] = hp[0] + 1
         return hp
 
