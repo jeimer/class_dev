@@ -53,8 +53,7 @@ class Demodulator(object):
         s = np.zeros(np.shape(data))
         h = kern(fc, np.shape(data)[-1])
         s[:,:len(h)] = h
-        imp = np.roll(s, -order/2, axis = -1)
-        f_imp = np.fft.rfft(imp)
+        f_imp = np.fft.rfft(s)
         return np.fft.irfft(f_data * f_imp, np.shape(data)[-1])
 
     def demod(self, param = 'u', fcl = 1.):
