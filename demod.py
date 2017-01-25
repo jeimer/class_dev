@@ -3,6 +3,7 @@ import numpy as np
 
 class Demodulator(object):
     def __init__(self, tod):
+
         self._tod = tod
         self._dets = tod.det_uid
         self._utrans_path = 'umat.npy'
@@ -15,7 +16,12 @@ class Demodulator(object):
         self._tw = 0.01 / self._sampling_freq
         return
 
+    def set_tw(self, tw):
+        self._tw = tw
+        return
 
+    def get_tw(self):
+        return self._tw
 
     def lpkern(self, fc, n):
         order = int(np.ceil(2. / self._tw) * 2)
@@ -61,6 +67,8 @@ class Demodulator(object):
         fc = fcl/self._sampling_freq
         s = {'u': self._utrans, 'v': self._vtrans}
         pos = np.digitize(self._tod.vpm - 0.0001/2, self._bins)
+        if np.shape()self._tod.data[0]) == 1:
+            self._tod.data = self._tod.data = self._tod.data.reshape(1, len(self._tod.data))
         self._tod.data *= s[param][:, pos]
         self._tod.data = self.filt(self.lpkern, self._tod.data, fc)
         return
