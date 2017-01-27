@@ -57,7 +57,6 @@ class Demodulator(object):
         '''
         f_data = np.fft.rfft(data)
         s = np.zeros(np.shape(data))
-        print(np.shape(s))
         h = kern(fc, np.shape(data)[-1])
         s[:,:len(h)] = h
         f_imp = np.fft.rfft(s)
@@ -68,7 +67,7 @@ class Demodulator(object):
         s = {'u': self._utrans, 'v': self._vtrans}
         pos = np.digitize(self._tod.vpm - 0.0001/2, self._bins)
         if np.shape(self._tod.data[0]) == 1:
-            self._tod.data = self._tod.data = self._tod.data.reshape(1, len(self._tod.data))
+            self._tod.data = self._tod.data.reshape(1, len(self._tod.data))
         self._tod.data *= s[param][:, pos]
         self._tod.data = self.filt(self.lpkern, self._tod.data, fc)
         return
