@@ -1,6 +1,4 @@
 import numpy as np
-import time
-
 
 class Demodulator(object):
     def __init__(self, tod):
@@ -151,20 +149,12 @@ class Demodulator(object):
         fh = fh/self._sampling_freq
         fl = fl/self._sampling_freq
         s = {'u': self._utrans, 'v': self._vtrans}
-        t = []
-        t += [time.time()]
         self._tod.data = self.filt(self.hpkern, self._tod.data, fh)
-        t += [time.time()]
         pos = np.digitize(self._tod.vpm - 0.0001/2, self._bins)
-        t += [time.time()]
         self._tod.vpm = self._tod.vpm.reshape(1, len(self._tod.vpm))
-        t += [time.time()]
         self._tod.vpm = self.filt(self.hpkern, self._tod.vpm, fh)
-        t += [time.time()]
         self._tod.data *= s[param][:, pos]
-        t += [time.time()]
         self._tod.data = self.filt(self.lpkern, self._tod.data, fl)
-        t += [time.time()]
         return t
 
 
