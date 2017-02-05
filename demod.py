@@ -155,6 +155,6 @@ class Demodulator(object):
         self._tod.vpm = self.filt(self.hpkern, self._tod.vpm, fh)
         self._tod.data *= s[param][:, pos]
         self._tod.data = self.filt(self.lpkern, self._tod.data, fl)
-        return t
+        return
 
 
