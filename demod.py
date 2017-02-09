@@ -1,4 +1,5 @@
 import numpy as np
+from moby2.tod import filter
 
 class Demodulator(object):
     def __init__(self, tod):
@@ -111,7 +112,7 @@ class Demodulator(object):
         f_imp = np.fft.rfft(s)
         return np.fft.irfft(f_data * f_imp, np.shape(data)[-1])
 
-    def demod(self, param = 'u', fcl = 1.):
+    def demod(self, param = 'u', fcl = 3.):
         '''
         demodulate the instatiated tod.
         *** WARNING ***
@@ -132,7 +133,7 @@ class Demodulator(object):
         self._tod.data = self.filt(self.lpkern, self._tod.data, fc)
         return
 
-    def demod2(self, param = 'u', fh = 7., fl = 1.):
+    def demod2(self, param = 'u', fh = 7., fl = 3.):
         '''
         demodulate the instatiated tod.
         *** WARNING ***
@@ -157,4 +158,81 @@ class Demodulator(object):
         self._tod.data = self.filt(self.lpkern, self._tod.data, fl)
         return
 
+    def demod3(self, param = 'u', fh = 7., fl = 3.):
+        '''
+        demodulate the instatiated tod.
+        *** WARNING ***
+        THE TOD IS ALTERED
+        Parameters:
+        param(string): either 'u' or 'v' to demodulate
+        fh(float): high-pass cuttoff frequency in Hz. The TOD and vpm are both
+        high-passed prior to demodulation. 
+        fcl(float): low-pass cuttoff frequency in Hz. The low pass filter is
+        applied after taking the product of the tod with the VPM transfer
+        function.
+        '''
 
+        fh = fh/self._sampling_freq
+        fl = fl/self._sampling_freq
+        s = {'u': self._utrans, 'v': self._vtrans}
+        self._tod.data = self.filt(self.hpkern, self._tod.data, fh)
+        pos = np.digitize(self._tod.vpm - 0.0001/2, self._bins)
+        #self._tod.vpm = self._tod.vpm.reshape(1, len(self._tod.vpm))
+        #self._tod.vpm = self.filt(self.hpkern, self._tod.vpm, fh)
+        self._tod.data *= s[param][:, pos]
+        self._tod.data = self.filt(self.lpkern, self._tod.data, fl)
+        return
+
+    def demod4(self, param = 'u', fh = 7., fl = 3.):
+        '''
+        demodulate the instatiated tod.
+        *** WARNING ***
+        THE TOD IS ALTERED
+        Parameters:
+        param(string): either 'u' or 'v' to demodulate
+        fh(float): high-pass cuttoff frequency in Hz. The TOD and vpm are both
+        high-passed prior to demodulation. 
+        fcl(float): low-pass cuttoff frequency in Hz. The low pass filter is
+        applied after taking the product of the tod with the VPM transfer
+        function.
+        '''
+
+        fh = fh/self._sampling_freq
+        fl = fl/self._sampling_freq
+        s = {'u': self._utrans, 'v': self._vtrans}
+        self._tod.data = self.filt(self.hpkern, self._tod.data, fh)
+        self._tod.vpm = self._tod.vpm.reshape(1, len(self._tod.vpm))
+        self._tod.vpm = self.filt(self.hpkern, self._tod.vpm, fh)
+        pos = np.digitize(self._tod.vpm - 0.0001/2, self._bins)
+        self._tod.data *= s[param][:, pos]
+        self._tod.data = self.filt(self.lpkern, self._tod.data, fl)
+        return
+
+    def demod5(self, param = 'u', fh = 7., fl = 3.):
+        '''
+        demodulate the instatiated tod.
+        *** WARNING ***
+        THE TOD IS ALTERED
+        Parameters:
+        param(string): either 'u' or 'v' to demodulate
+        fh(float): high-pass cuttoff frequency in Hz. The TOD and vpm are both
+        high-passed prior to demodulation. 
+        fcl(float): low-pass cuttoff frequency in Hz. The low pass filter is
+        applied after taking the product of the tod with the VPM transfer
+        function.
+        '''
+
+        fh = fh/self._sampling_freq
+        fl = fl/self._sampling_freq
+        s = {'u': self._utrans, 'v': self._vtrans}
+
+        pos = np.digitize(self._tod.vpm - 0.0001/2, self._bins)
+
+        #self._tod.vpm = self._tod.vpm.reshape(1, len(self._tod.vpm))
+        hpfilt = np.fft.fft(self.hpkern(fh, len(self._tod.vpm)))
+        filter.apply_simple(self._tod.vpm, hpfilt)
+        filter.apply_simple(self._tod.data, hpfilt)
+
+        self._tod.data *= s[param][:, pos]
+        self._tod.data = self.filt(self.lpkern, self._tod.data, fl)
+        return
