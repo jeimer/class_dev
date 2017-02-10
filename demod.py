@@ -261,8 +261,9 @@ class Demodulator(object):
         hpfilt = np.fft.fft(self.hpkern(fh, len(self._tod.vpm)))
         #hpfilt = np.fft.fftshift(hpfilt)
         self._tod.vpm = self._tod.vpm.reshape(1, len(self._tod.vpm))
-        filter.apply_simple(self._tod.vpm, hpfilt)
         filter.apply_simple(self._tod.data, hpfilt)
+        filter.apply_simple(self._tod.vpm, hpfilt)
+
         pos = np.digitize(self._tod.vpm - 0.0001/2, self._bins)
         self._tod.data *= s[param][:, pos]
         lpfilt = np.fft.fft(self.lpkern(lp, len(self._tod.vpm)))
