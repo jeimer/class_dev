@@ -255,13 +255,16 @@ class Demodulator(object):
         fl = fl/self._sampling_freq
         s = {'u': self._utrans, 'v': self._vtrans}
 
-        pos = np.digitize(self._tod.vpm - 0.0001/2, self._bins)
+
 
         #self._tod.vpm = self._tod.vpm.reshape(1, len(self._tod.vpm))
         hpfilt = np.fft.fft(self.hpkern(fh, len(self._tod.vpm)))
+        #hpfilt = np.fft.fftshift(hpfilt)
         filter.apply_simple(self._tod.vpm, hpfilt)
         filter.apply_simple(self._tod.data, hpfilt)
-
+        pos = np.digitize(self._tod.vpm - 0.0001/2, self._bins)
         self._tod.data *= s[param][:, pos]
-        self._tod.data = self.filt(self.lpkern, self._tod.data, fl)
+        lpfilt = np.fft.fft(self.lpkern(lp, len(self._tod.vpm)))
+        #hpfilt = np.fft.fftshift(lpfilt)
+        filter.apply_simple(self._tod.data, lpfilt)
         return
