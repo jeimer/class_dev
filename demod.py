@@ -245,19 +245,16 @@ class Demodulator(object):
         Parameters:
         param(string): either 'u' or 'v' to demodulate
         fh(float): high-pass cuttoff frequency in Hz. The TOD and vpm are both
-        high-passed prior to demodulation. 
+        high-passed prior to demodulation.
         fcl(float): low-pass cuttoff frequency in Hz. The low pass filter is
         applied after taking the product of the tod with the VPM transfer
         function.
         '''
-
         fh = fh/self._sampling_freq
         fl = fl/self._sampling_freq
         s = {'u': self._utrans, 'v': self._vtrans}
-
-
-
         #self._tod.vpm = self._tod.vpm.reshape(1, len(self._tod.vpm))
+
         hpfilt = np.fft.fft(self.hpkern(fh, len(self._tod.vpm)))
         #hpfilt = np.fft.fftshift(hpfilt)
         oshape = np.shape(self._tod.vpm)
