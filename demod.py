@@ -253,18 +253,25 @@ class Demodulator(object):
         fh = fh/self._sampling_freq
         fl = fl/self._sampling_freq
         s = {'u': self._utrans, 'v': self._vtrans}
-        #self._tod.vpm = self._tod.vpm.reshape(1, len(self._tod.vpm))
 
-        hpfilt = np.fft.fft(self.hpkern(fh, len(self._tod.vpm)))
-        #hpfilt = np.fft.fftshift(hpfilt)
+        #define filers
+        lpfilt = np.fft.fft(self.lpkern(fl, len(self._tod.data[-1])))
+        hpfilt = np.fft.fft(self.hpkern(fh, len(self._tod.data[-1])))
+
+        #highpass data
+        filter.apply_simple(self._tod.data, hpfilt)
+
+        #highpass vpm
         oshape = np.shape(self._tod.vpm)
         self._tod.vpm = self._tod.vpm.reshape(1, len(self._tod.vpm))
-        filter.apply_simple(self._tod.data, hpfilt)
         filter.apply_simple(self._tod.vpm.astype('float32'), hpfilt)
         self._tod.vpm = self._tod.vpm.reshape(oshape)
+
+        #take product of detector data and transfer function
         pos = np.digitize(self._tod.vpm - 0.0001/2, self._bins)
         self._tod.data *= s[param][:, pos]
-        lpfilt = np.fft.fft(self.lpkern(fl, len(self._tod.vpm)))
-        #hpfilt = np.fft.fftshift(lpfilt)
+
+        #lowpass data
+
         filter.apply_simple(self._tod.data, lpfilt)
         return
