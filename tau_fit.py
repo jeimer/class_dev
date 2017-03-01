@@ -4,7 +4,7 @@ from scipy import optimize
 from moby2.tod import filter
 import classtools.better_binner as bb
 
-class Tc():
+class TauFit():
 
     def __init__(self, tod, trim = 100):
         '''
